@@ -28,7 +28,7 @@ Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - git: "https://github.com/dwreeves/dbt_linreg.git"
-    revision: "0.1.0"
+    revision: "v0.1.0"
 ```
 
 The full file will look something like this:
@@ -39,7 +39,7 @@ packages:
   # Other packages here
   # ...
   - git: "https://github.com/dwreeves/dbt_linreg.git"
-    revision: "0.1.0"
+    revision: "v0.1.0"
 ```
 
 # Examples
@@ -172,7 +172,7 @@ def ols(
     table: str,
     endog: str,
     exog: Union[str, list[str]],
-    format: Literal['wide', 'long'],
+    format: Literal['wide', 'long'] = 'wide',
     format_options: Optional[dict[str, Any]] = None,
     group_by: Optional[Union[str, list[str]]] = None,
     alpha: Optional[Union[str, list[str]]] = None,
