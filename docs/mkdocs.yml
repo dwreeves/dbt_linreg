@@ -1,0 +1,40 @@
+site_name: dbt_linreg
+site_url: https://dwreeves.github.io/dbt_linreg/
+site_description: Docs for dbt_linreg
+site_author: Daniel Reeves
+repo_url: https://github.com/dwreeves/dbt_linreg/
+repo_name: dbt_linreg
+docs_dir: src
+nav:
+- Home: index.md
+theme:
+  name: material
+  palette:
+    scheme: default
+    primary: white
+    accent: light blue
+  logo: img/dbt-linreg-logo.png
+  favicon: img/dbt-linreg-favicon.png
+  font:
+    text: Opens Sans
+    code: Roboto Mono
+plugins:
+  - macros
+markdown_extensions:
+- admonition
+- pymdownx.tabbed
+- pymdownx.keys
+- pymdownx.details
+- pymdownx.inlinehilite
+- pymdownx.superfences
+- markdown_include.include:
+    base_path: docs
+- sane_lists
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dwreeves/dbt_linreg
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/daniel-reeves-27700545/
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/mueblesfeos

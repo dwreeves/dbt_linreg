@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+function setup {
+	poetry install
+	poetry run pre-commit install
+}
+
+function test {
+  rm -f integration_tests/dbt.duckdb
+  poetry run python scripts.py gen-test-cases
+  poetry run dbt deps --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
+  poetry run dbt seed --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
+  poetry run dbt run --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
+  poetry run dbt test --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
+}
+
+function lint {
+  poetry run pre-commit run -a
+}
+
+function docs:deploy {
+  mkdocs gh-deploy -f docs/mkdocs.yml
+}
+
+function help {
+    echo "$0 <task> <args>"
+    echo "Tasks:"
+    compgen -A function | cat -n
+}
+
+TIMEFORMAT=$'\nTask completed in %3lR'
+time "${@:-help}"
