@@ -62,7 +62,7 @@ on
 
 {% macro _filter_and_center_if_alpha(i, alpha, base_prefix='') %}
 {% if alpha %}
-  {{ return('case when not fake then ' ~ base_prefix ~ i ~ ' + cmeans.' ~ i ~ ' end') }}
+  {{ return('case when not fake then ' ~ base_prefix ~ i ~ ' + _dbt_linreg_cmeans.' ~ i ~ ' end') }}
 {% else %}
   {{ return(i) }}
 {% endif %}
@@ -116,7 +116,7 @@ on
 {%- set exog_aliased = dbt_linreg._alias_exog(exog) %}
 (with
 {%- if alpha %}
-cmeans as (
+_dbt_linreg_cmeans as (
   select
     {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
     avg({{ endog }}) as y,
@@ -132,13 +132,13 @@ cmeans as (
   {%- endif %}
 ),
 {%- endif %}
-step0 as (
+_dbt_linreg_step0 as (
   select
     {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
     {%- if alpha %}
-    b.{{ endog }} - cmeans.y as y,
+    b.{{ endog }} - _dbt_linreg_cmeans.y as y,
     {%- for i in exog_aliased %}
-    b.{{ exog[loop.index0] }} - cmeans.{{ i }} as {{ i }},
+    b.{{ exog[loop.index0] }} - _dbt_linreg_cmeans.{{ i }} as {{ i }},
     {%- endfor %}
     {%- else %}
     {{ endog }} as y,
@@ -150,7 +150,7 @@ step0 as (
   from
     {{ table }} as b
   {%- if alpha %}
-  {{ dbt_linreg._join_on_groups(group_by, 'b', 'cmeans') | indent(2) }}
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_cmeans') | indent(2) }}
   {%- for i in exog_aliased %}
   {%- set i_idx = loop.index0 %}
   union all
@@ -165,12 +165,12 @@ step0 as (
     {%- endif %}
     {%- endfor %}
     true as fake
-  from cmeans
+  from _dbt_linreg_cmeans as cmeans
   {%- endfor %}
   {%- endif %}
 ),
 {% for step in range(1, (exog | length)) %}
-step{{ step }} as (
+_dbt_linreg_step{{ step }} as (
   with
   _coefs as (
     select
@@ -195,7 +195,7 @@ step{{ step }} as (
       ,
       {%- endif -%}
       {%- endfor %}
-    from step{{ step - 1 }}
+    from _dbt_linreg_step{{ step - 1 }}
     {%- if group_by %}
     group by
       {{ dbt_linreg._gb_cols(group_by) | indent(6) }}
@@ -221,11 +221,11 @@ step{{ step }} as (
     ,
     {%- endif %}
     {%- endfor %}
-  from step0 as b
+  from _dbt_linreg_step0 as b
   {{ dbt_linreg._join_on_groups(group_by, 'b', '_coefs') | indent(2) }}
 ),
 {%- if loop.last %}
-final_coefs as (
+_dbt_linreg_final_coefs as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     avg({{ dbt_linreg._filter_and_center_if_alpha('y', alpha, base_prefix='b.') }})
@@ -239,9 +239,9 @@ final_coefs as (
     ,
     {%- endif %}
     {%- endfor %}
-  from step{{ step }} as b
+  from _dbt_linreg_step{{ step }} as b
   {%- if alpha %}
-  {{ dbt_linreg._join_on_groups(group_by, 'b', 'cmeans') | indent(2) }}
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_cmeans') | indent(2) }}
   {%- endif %}
   {%- if group_by %}
   group by

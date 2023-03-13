@@ -8,7 +8,7 @@
 {%- set exog_aliased = ['x1'] %}
 (with
 {%- if alpha %}
-cmeans as (
+_dbt_linreg_cmeans as (
   select
     {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
     avg({{ endog }}) as y,
@@ -22,12 +22,12 @@ cmeans as (
   {%- endif %}
 ),
 {%- endif %}
-base as (
+_dbt_linreg_base as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     {%- if alpha %}
-    b.{{ endog }} - cmeans.y as y,
-    b.{{ exog[0] }} - cmeans.x1 as x1,
+    b.{{ endog }} - _dbt_linreg_cmeans.y as y,
+    b.{{ exog[0] }} - _dbt_linreg_cmeans.x1 as x1,
     {%- else %}
     {{ endog }} as y,
     b.{{ exog[0] }} as x1,
@@ -36,26 +36,26 @@ base as (
   from
     {{ table }} as b
   {%- if alpha %}
-  {{ dbt_linreg._join_on_groups(group_by, 'b', 'cmeans') | indent(2) }}
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_cmeans') | indent(2) }}
   union all
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     0 as y,
     pow(x1 * ct, 0.5) as x1,
     true as fake
-  from cmeans
+  from _dbt_linreg_cmeans
   {%- endif %}
 ),
-final_coefs as (
+_dbt_linreg_final_coefs as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     avg({{ dbt_linreg._filter_and_center_if_alpha('b.y', alpha) }})
       - avg({{ dbt_linreg._filter_and_center_if_alpha('b.x1', alpha) }}) * {{ dbt_linreg.regress('b.y', 'b.x1') }}
       as const_coef,
     {{ dbt_linreg.regress('b.y', 'b.x1') }} as x1_coef
-  from base as b
+  from _dbt_linreg_base as b
   {%- if alpha %}
-  {{ dbt_linreg._join_on_groups(group_by, 'b', 'cmeans') | indent(2) }}
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_cmeans') | indent(2) }}
   {%- endif %}
   {%- if group_by %}
   group by

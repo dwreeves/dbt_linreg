@@ -1,4 +1,4 @@
-dbt_linear_regression:
+dbt_linreg_profile:
   target: dev
   outputs:
    dev:

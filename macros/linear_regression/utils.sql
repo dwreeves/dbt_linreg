@@ -18,9 +18,9 @@
 ## Final select
 ###############################################################################}
 
-{# Every OLS method ends with a "final_coefs" CTE with a common interface. This
-   interface can then be transformed in a standard way using the final_select()
-   macro, which formats the output for the user. #}
+{# Every OLS method ends with a "_dbt_linreg_final_coefs" CTE with a common
+   interface. This interface can then be transformed in a standard way using the
+   final_select() macro, which formats the output for the user. #}
 {% macro final_select(exog=None,
                       exog_aliased=None,
                       group_by=None,
@@ -32,14 +32,14 @@ select
   {{ dbt_linreg._unalias_gb_cols(group_by) }}
   '{{ format_options.get('constant_name', 'const') }}' as {{ format_options.get('variable_column_name', 'variable_name') }},
   {{ dbt_linreg._fmt_final_coef('const', format_options.get('round')) }} as {{ format_options.get('coefficient_column_name', 'coefficient') }}
-from final_coefs
+from _dbt_linreg_final_coefs
 {%- for i in exog_aliased %}
 union all
 select
   {{ dbt_linreg._unalias_gb_cols(group_by) }}
   '{{ dbt_linreg._strip_quotes(exog[loop.index0], format_options) }}' as variable_name,
   {{ dbt_linreg._fmt_final_coef(i, format_options.get('round')) }} as coefficient
-from final_coefs
+from _dbt_linreg_final_coefs
 {%- endfor %}
 {%- elif format == 'wide' %}
 select
@@ -54,10 +54,10 @@ select
   ,
   {%- endif %}
   {%- endfor %}
-from final_coefs
+from _dbt_linreg_final_coefs
 {%- else %}
 {#- Fallback option (which should never happen!) is to just select star. #}
-select * from final_coefs
+select * from _dbt_linreg_final_coefs
 {%- endif %}
 {%- endmacro %}
 

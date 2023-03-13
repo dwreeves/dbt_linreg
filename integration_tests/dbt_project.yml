@@ -1,5 +1,5 @@
 name: "dbt_linreg_tests"
-version: "0.1.0"
+version: "0.1.1"
 
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
@@ -11,4 +11,4 @@ macro-paths: ["macros"]
 log-path: "logs"
 
 # During dev only!
-profile: "dbt_linear_regression"
+profile: "dbt_linreg_profile"

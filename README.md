@@ -12,7 +12,7 @@
 
 # Overview
 
-**dbt_linreg** is an easy way to perform linear regression in SQL (Snowflake, DuckDB, Postgres, and more) using dbt's Jinja2 templating.
+**dbt_linreg** is an easy way to perform linear regression in SQL (Snowflake, DuckDB, and more) using dbt's Jinja2 templating.
 
 Reasons to use **dbt_linreg**:
 
@@ -24,11 +24,13 @@ Reasons to use **dbt_linreg**:
 
 # Installation
 
+dbt-core `>=1.2.0` is required to install `dbt_linreg`.
+
 Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - git: "https://github.com/dwreeves/dbt_linreg.git"
-    revision: "v0.1.0"
+    revision: "v0.1.1"
 ```
 
 The full file will look something like this:
@@ -39,7 +41,7 @@ packages:
   # Other packages here
   # ...
   - git: "https://github.com/dwreeves/dbt_linreg.git"
-    revision: "v0.1.0"
+    revision: "v0.1.1"
 ```
 
 # Examples
@@ -114,7 +116,7 @@ preprocessed_and_normalized_data as (
     (sin_t - avg(sin_t) over ()) / (stddev(sin_t) over ()) as sin_t_norm,
     (cos_t - avg(cos_t) over ()) / (stddev(cos_t) over ()) as cos_t_norm
   from
-    {{ ref('prices') }}
+    preprocessed_data
 
 ),
 
@@ -122,7 +124,7 @@ coefficients as (
 
     select * from {{
       dbt_linreg.ols(
-        table='preprocessed_data'
+        table='preprocessed_data',
         endog='log_price',
         exog=['t_norm', 'sin_t_norm', 'cos_t_norm'],
         group_by=['product_id'],
@@ -250,7 +252,7 @@ Ridge regression is implemented using the augmentation technique described in Ex
 
 All approaches were validated using Statsmodels `sm.OLS()`. Note that the ridge regression coefficients differ very slightly from Statsmodels's outputs for currently unknown reasons, but the coefficients are very close (I enforce a `<0.01%` deviation from Statsmodels's ridge regression coefficients in my integration tests).
 
-### BigQuery (or other database) has linear regression implemented natively. Why should I use `dbt_linear_regression` over that?
+### BigQuery (or other database) has linear regression implemented natively. Why should I use `dbt_linreg` over that?
 
 You don't have to use this. Most warehouses don't support multiple regression out of the box, so this satisfies a niche for those database tools which don't.
 
