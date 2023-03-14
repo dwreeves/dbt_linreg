@@ -12,11 +12,11 @@
 
 # Overview
 
-**dbt_linreg** is an easy way to perform linear regression in SQL (Snowflake, DuckDB, and more) using dbt's Jinja2 templating.
+**dbt_linreg** is an easy way to perform linear regression and ridge regression in SQL (Snowflake, DuckDB, and more) with OLS using dbt's Jinja2 templating.
 
 Reasons to use **dbt_linreg**:
 
-- 📈 **Linear regression in pure SQL:** With the power of Jinja2 templating and some behind-the-scenes math tricks, it is possible to implement linear regression in pure SQL. Most SQL engines (even OLAP engines) do not have a multiple regression implementation of OLS, so this fills a valuable niche.
+- 📈 **Linear regression in pure SQL:** With the power of Jinja2 templating and some behind-the-scenes math tricks, it is possible to implement multiple and multivariate regression in pure SQL. Most SQL engines (even OLAP engines) do not have a multiple regression implementation of OLS, so this fills a valuable niche. **`dbt_linreg` implements true OLS, not an approximation!**
 - 📱 **Simple interface:** Just define a `table=` (which works with `ref()`, `source()`, and CTEs), a y-variable with `endog=`, your x-variables in a list with `exog=...`, and you're all set! Note that the API is loosely based on Statsmodels's naming conventions.
 - 🤖 **Support for ridge regression:** Just pass in `alpha=scalar` or `alpha=[scalar1, scalar2, ...]` to regularize your regressions. (Note: regressors are not automatically standardized.)
 - 🤸‍ **Flexibility:** Tons of formatting options available to return coefficients the way you want.
@@ -124,7 +124,7 @@ coefficients as (
 
     select * from {{
       dbt_linreg.ols(
-        table='preprocessed_data',
+        table='preprocessed_and_normalized_data',
         endog='log_price',
         exog=['t_norm', 'sin_t_norm', 'cos_t_norm'],
         group_by=['product_id'],
@@ -177,7 +177,7 @@ def ols(
     format: Literal['wide', 'long'] = 'wide',
     format_options: Optional[dict[str, Any]] = None,
     group_by: Optional[Union[str, list[str]]] = None,
-    alpha: Optional[Union[str, list[str]]] = None,
+    alpha: Optional[Union[float, list[float]]] = None,
     method: Literal['fwl'] = 'fwl'
 ):
     ...
