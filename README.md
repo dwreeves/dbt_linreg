@@ -163,6 +163,15 @@ group by
   product_id
 ```
 
+# Supported Databases
+
+**dbt_linreg** should work with most SQL databases, but so far, testing has been done for the following database tools:
+
+- Snowflake
+- DuckDB
+
+If `dbt_linreg` does not work in your database tool, please let me know in a bug report and I can make sure it is supported.
+
 # API
 
 The only function available in the public API is the `dbt_linreg.ols()` macro.
