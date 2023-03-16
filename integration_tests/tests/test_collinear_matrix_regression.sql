@@ -1,6 +1,3 @@
-/* Ridge regression coefficients do not match exactly.
-   Instead, a threshold of no more than 0.01% deviation is enforced. */
-{% set THRESHOLD = 0.0001 %}
 with
 
 expected as (

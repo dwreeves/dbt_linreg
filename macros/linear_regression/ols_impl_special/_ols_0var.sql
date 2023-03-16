@@ -1,6 +1,7 @@
 {% macro _ols_0var(table,
                    endog,
                    exog,
+                   add_constant=True,
                    format=None,
                    format_options=None,
                    group_by=None,
@@ -19,6 +20,7 @@
   dbt_linreg.final_select(
     exog=[],
     exog_aliased=[],
+    add_constant=add_constant,
     group_by=group_by,
     format=format,
     format_options=format_options
