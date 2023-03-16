@@ -87,6 +87,7 @@ on
 {% macro _ols_fwl(table,
                   endog,
                   exog,
+                  add_constant=True,
                   format=None,
                   format_options=None,
                   group_by=None,
@@ -97,6 +98,7 @@ on
     table=table,
     endog=endog,
     exog=exog,
+    add_constant=add_constant,
     format=format,
     format_options=format_options,
     group_by=group_by,
@@ -107,6 +109,7 @@ on
     table=table,
     endog=endog,
     exog=exog,
+    add_constant=add_constant,
     format=format,
     format_options=format_options,
     group_by=group_by,
@@ -135,7 +138,7 @@ _dbt_linreg_cmeans as (
 _dbt_linreg_step0 as (
   select
     {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
-    {%- if alpha %}
+    {%- if alpha and add_constant %}
     b.{{ endog }} - _dbt_linreg_cmeans.y as y,
     {%- for i in exog_aliased %}
     b.{{ exog[loop.index0] }} - _dbt_linreg_cmeans.{{ i }} as {{ i }},
@@ -150,7 +153,9 @@ _dbt_linreg_step0 as (
   from
     {{ table }} as b
   {%- if alpha %}
+  {%- if add_constant %}
   {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_cmeans') | indent(2) }}
+  {%- endif %}
   {%- for i in exog_aliased %}
   {%- set i_idx = loop.index0 %}
   union all
@@ -179,13 +184,13 @@ _dbt_linreg_step{{ step }} as (
 
       {%- for _y, _x, _o in dbt_linreg._traverse_slopes(step, exog_aliased) %}
       {%- set _c = dbt_linreg._orth_x_slope(_x, _o) %}
-      {{ dbt_linreg.regress(_y, _c) }} as {{ _y }}_{{ _c }}_coef,
+      {{ dbt_linreg.regress(_y, _c, add_constant=add_constant) }} as {{ _y }}_{{ _c }}_coef,
       {%- endfor %}
-      {%- for _y, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
-      avg({{ dbt_linreg._filter_if_alpha(_y, alpha) }})
 
       {#- Constant terms #}
-
+      {%- if add_constant %}
+      {%- for _y, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
+      avg({{ dbt_linreg._filter_if_alpha(_y, alpha) }})
       {%- for _yi, _xi in _o %}
       {%- set _ci = dbt_linreg._orth_x_slope(_yi, _xi) %}
         - avg({{ dbt_linreg._filter_if_alpha(_yi, alpha) }}) * {{ dbt_linreg.regress(_yi, _ci) }}
@@ -195,6 +200,7 @@ _dbt_linreg_step{{ step }} as (
       ,
       {%- endif -%}
       {%- endfor %}
+      {%- endif %}
     from _dbt_linreg_step{{ step - 1 }}
     {%- if group_by %}
     group by
@@ -215,7 +221,9 @@ _dbt_linreg_step{{ step }} as (
       - {{ _y }}_{{ _ci }}_coef * {{ _yi }}
     {%- endfor %}
       {%- set _c = dbt_linreg._orth_x_intercept(_y, _o) %}
+      {%- if add_constant %}
       - {{ _c }}_const
+      {%- endif %}
       as {{ _c }}
     {%- if not loop.last -%}
     ,
@@ -227,20 +235,22 @@ _dbt_linreg_step{{ step }} as (
 {%- if loop.last %}
 _dbt_linreg_final_coefs as (
   select
+    {%- if add_constant %}
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     avg({{ dbt_linreg._filter_and_center_if_alpha('y', alpha, base_prefix='b.') }})
       {%- for _x, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
       - avg({{ dbt_linreg._filter_and_center_if_alpha(_x, alpha, base_prefix='b.') }}) * {{ dbt_linreg.regress('b.y', dbt_linreg._orth_x_intercept('b.' ~ _x, _o)) }}
       {%- endfor %}
       as const_coef,
+    {%- endif %}
     {%- for _x, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
-    {{ dbt_linreg.regress('b.y', dbt_linreg._orth_x_intercept(_x, _o)) }} as {{ _x }}_coef
+    {{ dbt_linreg.regress('b.y', dbt_linreg._orth_x_intercept(_x, _o), add_constant=add_constant) }} as {{ _x }}_coef
     {%- if not loop.last -%}
     ,
     {%- endif %}
     {%- endfor %}
   from _dbt_linreg_step{{ step }} as b
-  {%- if alpha %}
+  {%- if alpha and add_constant %}
   {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_cmeans') | indent(2) }}
   {%- endif %}
   {%- if group_by %}
@@ -254,6 +264,7 @@ _dbt_linreg_final_coefs as (
   dbt_linreg.final_select(
     exog=exog,
     exog_aliased=exog_aliased,
+    add_constant=add_constant,
     group_by=group_by,
     format=format,
     format_options=format_options

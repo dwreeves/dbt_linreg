@@ -3,6 +3,7 @@
              exog=None,
              x=None,
              y=None,
+             add_constant=True,
              format='wide',
              format_options=None,
              group_by=None,
@@ -79,6 +80,13 @@
     ) }}
   {% endif %}
 
+  {% if not exog and not add_constant %}
+    {{ exceptions.raise_compiler_error(
+      "Cannot run dbt_linreg.ols() because there are no exogenous variables"
+       " / features to regress!"
+    ) }}
+  {% endif %}
+
   {% for i in range((exog | length)) %}
     {% for j in range(i, (exog | length)) %}
       {% if i != j %}
@@ -122,6 +130,7 @@
         table=table,
         endog=endog,
         exog=exog,
+        add_constant=add_constant,
         format=format,
         format_options=format_options,
         group_by=group_by,

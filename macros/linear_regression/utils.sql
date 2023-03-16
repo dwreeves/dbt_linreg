@@ -2,16 +2,27 @@
 ## Simple univariate regression.
 ###############################################################################}
 
-{% macro regress(y, x) %}
-  {{ return(adapter.dispatch('regress', 'dbt_linreg')(y, x)) }}
+{% macro regress(y, x, add_constant=True) %}
+  {{ return(
+    adapter.dispatch('regress', 'dbt_linreg')
+    (y, x, add_constant=add_constant)
+  ) }}
 {% endmacro %}
 
-{% macro default__regress(y, x) -%}
+{% macro default__regress(y, x, add_constant=True) -%}
+  {%- if add_constant -%}
   covar_pop({{ x }}, {{ y }}) / var_pop({{ x }})
+  {%- else -%}
+  sum({{ x }} * {{ y }}) / sum({{ x }} * {{ x }})
+  {%- endif -%}
 {%- endmacro %}
 
-{% macro snowflake__regress(y, x) -%}
+{% macro snowflake__regress(y, x, add_constant=True) -%}
+  {%- if add_constant -%}
   regr_slope({{ x }}, {{ y }})
+  {%- else -%}
+  sum({{ x }} * {{ y }}) / sum({{ x }} * {{ x }})
+  {%- endif -%}
 {%- endmacro %}
 
 {###############################################################################
@@ -24,29 +35,39 @@
 {% macro final_select(exog=None,
                       exog_aliased=None,
                       group_by=None,
+                      add_constant=True,
                       format=None,
                       format_options=None,
                       round_=None) -%}
 {%- if format == 'long' %}
+{%- if add_constant %}
 select
   {{ dbt_linreg._unalias_gb_cols(group_by) }}
   '{{ format_options.get('constant_name', 'const') }}' as {{ format_options.get('variable_column_name', 'variable_name') }},
   {{ dbt_linreg._fmt_final_coef('const', format_options.get('round')) }} as {{ format_options.get('coefficient_column_name', 'coefficient') }}
 from _dbt_linreg_final_coefs
-{%- for i in exog_aliased %}
+{%- if exog_aliased %}
 union all
+{%- endif %}
+{%- endif %}
+{%- for i in exog_aliased %}
 select
   {{ dbt_linreg._unalias_gb_cols(group_by) }}
   '{{ dbt_linreg._strip_quotes(exog[loop.index0], format_options) }}' as variable_name,
   {{ dbt_linreg._fmt_final_coef(i, format_options.get('round')) }} as coefficient
 from _dbt_linreg_final_coefs
+{%- if not loop.last %}
+union all
+{%- endif %}
 {%- endfor %}
 {%- elif format == 'wide' %}
 select
+  {%- if add_constant -%}
   {{ dbt_linreg._unalias_gb_cols(group_by) }}
   {{ dbt_linreg._fmt_final_coef('const', format_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(format_options.get('constant_name', 'const'), format_options) }}
   {%- if exog_aliased -%}
   ,
+  {%- endif -%}
   {%- endif -%}
   {%- for i in exog_aliased %}
   {{ dbt_linreg._fmt_final_coef(i, format_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(exog[loop.index0], format_options) }}

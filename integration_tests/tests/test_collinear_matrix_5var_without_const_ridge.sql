@@ -5,22 +5,20 @@ with
 
 expected as (
 
-  select 'const' as variable_name, 20.7548151107157 as coefficient
+  select 'x1' as variable_name, 9.44760329057758 as coefficient
   union all
-  select 'x1' as variable_name, 9.784064449021356 as coefficient
+  select 'x2' as variable_name, 3.5049555562844787 as coefficient
   union all
-  select 'x2' as variable_name, 6.315640539781496 as coefficient
+  select 'x3' as variable_name, 20.753357497835637 as coefficient
   union all
-  select 'x3' as variable_name, 19.578696589513562 as coefficient
+  select 'x4' as variable_name, 3.522584853991104 as coefficient
   union all
-  select 'x4' as variable_name, 3.736823845978248 as coefficient
-  union all
-  select 'x5' as variable_name, 13.323547772767592 as coefficient
+  select 'x5' as variable_name, 16.31725550368597 as coefficient
 
 )
 
 select base.variable_name
-from {{ ref('collinear_matrix_ridge_regression') }} as base
+from {{ ref('collinear_matrix_5var_without_const_ridge') }} as base
 full outer join expected
 on base.variable_name = expected.variable_name
 where

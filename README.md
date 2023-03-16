@@ -29,8 +29,8 @@ dbt-core `>=1.2.0` is required to install `dbt_linreg`.
 Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
-  - git: "https://github.com/dwreeves/dbt_linreg.git"
-    revision: "v0.1.1"
+  - package: "dwreeves/dbt_linreg"
+    version: "0.1.2"
 ```
 
 The full file will look something like this:
@@ -40,8 +40,8 @@ packages:
   # ...
   # Other packages here
   # ...
-  - git: "https://github.com/dwreeves/dbt_linreg.git"
-    revision: "v0.1.1"
+  - package: "dwreeves/dbt_linreg"
+    version: "0.1.2"
 ```
 
 # Examples
@@ -163,6 +163,15 @@ group by
   product_id
 ```
 
+# Supported Databases
+
+**dbt_linreg** should work with most SQL databases, but so far, testing has been done for the following database tools:
+
+- Snowflake
+- DuckDB
+
+If `dbt_linreg` does not work in your database tool, please let me know in a bug report and I can make sure it is supported.
+
 # API
 
 The only function available in the public API is the `dbt_linreg.ols()` macro.
@@ -174,6 +183,7 @@ def ols(
     table: str,
     endog: str,
     exog: Union[str, list[str]],
+    add_constant: bool = True,
     format: Literal['wide', 'long'] = 'wide',
     format_options: Optional[dict[str, Any]] = None,
     group_by: Optional[Union[str, list[str]]] = None,
@@ -188,6 +198,7 @@ Where:
 - **table**: Name of table or CTE to pull the data from. You can use `ref()` or `source()` here if you'd like.
 - **endog**: The endogenous variable / y variable / target variable of the regression. (You can also specify `y=...` instead of `endog=...` if you prefer.)
 - **exog**: The endogenous variable / y variable / target variable of the regression. (You can also specify `x=...` instead of `exog=...` if you prefer.)
+- **add_constant**: If true, a constant term is added automatically to the regression.
 - **format**: Either "wide" or "long" format for coefficients.
   - If `wide`, the variables span the columns with their original variable names, and the coefficients fill a single row.
   - If `long`, the coefficients are in a single column called `coefficient`, and the variable names are in a single column called `variable_name`.
@@ -223,7 +234,7 @@ All formats have their own format options, which can be passed into the `format_
 
 - ⚠️ **Please be aware that this implementation is very inefficient for large numbers of columns!** I believe the time complexity of the Jinja templating is O(2^K). I would suggest not going over 5 or 6 features for a single regression.
 
-- ⚠️ **If your coefficients are null, it does not mean dbt_linreg is broken, it most likely means your coefficients are perfectly multicollinear.** If you are 100% sure that is not the issue, please file a bug report with a minimally reproducible example.
+- ⚠️ **If your coefficients are null, it does not mean dbt_linreg is broken, it most likely means your feature columns are perfectly multicollinear.** If you are 100% sure that is not the issue, please file a bug report with a minimally reproducible example.
 
 - Regularization is implemented using nearly the same approach as Statsmodels; the only difference is that the constant term can never be regularized. This means:
   - A scalar input (e.g. `alpha=0.01`) will apply an alpha of `0.01` to all features.
