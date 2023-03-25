@@ -1,18 +1,3 @@
-{% macro _join_on_groups(group_by, join_from, join_to) -%}
-{%- if not group_by %}
-cross join {{ join_to }}
-{%- else %}
-inner join {{ join_to }}
-on
-  {%- for _ in group_by %}
-  {{ join_from }}.gb{{ loop.index }} = {{ join_to }}.gb{{ loop.index }}
-  {%- if not loop.last -%}
-  and
-  {%- endif %}
-  {%- endfor %}
-{%- endif %}
-{%- endmacro %}
-
 {% macro _traverse_slopes(step, x) -%}
   {%- set li = [] %}
   {%- for i in x %}
@@ -83,6 +68,29 @@ on
   {%- endfor %}
   {{ return(x ~ '_' ~ (li | join(''))) }}
 {% endmacro %}
+
+{% macro _regress_or_alias(y, x, add_constant=True) %}
+  {{ return(
+    adapter.dispatch('_regress_or_alias', 'dbt_linreg')
+    (y, x, add_constant=add_constant)
+  ) }}
+{% endmacro %}
+
+{# In some but not all query engines, you can select from other columns.
+   Doing this keeps the compiled SQL cleaner, and for large regressions can
+   slightly improve the query planner speed (albeit not the execution). #}
+{% macro default___regress_or_alias(y, x, add_constant=True) %}
+  {{ return(regress(y, x, add_constant=add_constant)) }}
+{% endmacro %}
+
+{% macro snowflake___regress_or_alias(y, x, add_constant=True) %}
+  {{ return(y ~ '_' ~ x ~ '_coef') }}
+{% endmacro %}
+
+{% macro duckdb___regress_or_alias(y, x, add_constant=True) %}
+  {{ return(y ~ '_' ~ x ~ '_coef') }}
+{% endmacro %}
+
 
 {% macro _ols_fwl(table,
                   endog,
@@ -193,7 +201,7 @@ _dbt_linreg_step{{ step }} as (
       avg({{ dbt_linreg._filter_if_alpha(_y, alpha) }})
       {%- for _yi, _xi in _o %}
       {%- set _ci = dbt_linreg._orth_x_slope(_yi, _xi) %}
-        - avg({{ dbt_linreg._filter_if_alpha(_yi, alpha) }}) * {{ dbt_linreg.regress(_yi, _ci) }}
+        - avg({{ dbt_linreg._filter_if_alpha(_yi, alpha) }}) * {{ dbt_linreg._regress_or_alias(_y, _ci) }}
       {%- endfor %}
         as {{ dbt_linreg._orth_x_intercept(_y, _o) }}_const
       {%- if not loop.last -%}

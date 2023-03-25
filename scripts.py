@@ -185,6 +185,11 @@ def cli():
 
 @cli.command("regress")
 @click.argument("table")
+@click.option("--const/--no-const",
+              default=True,
+              type=click.BOOL,
+              show_default=True,
+              help="If true, add the constant term.")
 @click.option("--columns", "-c",
               default=None,
               type=click.INT,
@@ -197,7 +202,7 @@ def cli():
               help="Alpha for the regression.")
 @click_option_size()
 @click_option_seed()
-def regress(table: str, columns: int, alpha: float, size: int, seed: int):
+def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed: int):
     callback = ALL_TEST_CASES[table]
 
     click.echo(click.style("=" * 80, fg="red"))
@@ -215,6 +220,9 @@ def regress(table: str, columns: int, alpha: float, size: int, seed: int):
     else:
         # K plus Constant (1)
         x_cols = test_case.x_cols[:columns]
+
+    if const:
+        x_cols = ["const"] + x_cols
 
     def _run_model(cond=None):
         if cond is None:

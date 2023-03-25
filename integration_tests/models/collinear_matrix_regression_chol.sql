@@ -9,6 +9,6 @@ select * from {{
     endog='y',
     exog=['x1', 'x2', 'x3', 'x4', 'x5'],
     format='long',
-    alpha=0.01
+    method='chol'
   )
 }}

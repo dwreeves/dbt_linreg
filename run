@@ -8,10 +8,10 @@ function setup {
 }
 
 function test {
-  rm -f integration_tests/dbt.duckdb
-  poetry run python scripts.py gen-test-cases
+  # rm -f integration_tests/dbt.duckdb
+  # poetry run python scripts.py gen-test-cases
   poetry run dbt deps --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
-  poetry run dbt seed --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
+  # poetry run dbt seed --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
   poetry run dbt run --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
   poetry run dbt test --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
 }

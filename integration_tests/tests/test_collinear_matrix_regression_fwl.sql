@@ -17,7 +17,7 @@ expected as (
 )
 
 select base.variable_name
-from {{ ref('collinear_matrix_regression') }} as base
+from {{ ref('collinear_matrix_regression_fwl') }} as base
 full outer join expected
 on base.variable_name = expected.variable_name
 where

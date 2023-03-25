@@ -170,3 +170,21 @@ gb{{ loop.index }}
 {% endfor %}
 {{ return(li) }}
 {%- endmacro %}
+
+{# Join on gb1, gb2 etc. from a table to another table.
+   If there is no group by column, assume `join_to` is just 1 row.
+   And in that case, just do a cross join. #}
+{% macro _join_on_groups(group_by, join_from, join_to) -%}
+{%- if not group_by %}
+cross join {{ join_to }}
+{%- else %}
+inner join {{ join_to }}
+on
+  {%- for _ in group_by %}
+  {{ join_from }}.gb{{ loop.index }} = {{ join_to }}.gb{{ loop.index }}
+  {%- if not loop.last -%}
+  and
+  {%- endif %}
+  {%- endfor %}
+{%- endif %}
+{%- endmacro %}
