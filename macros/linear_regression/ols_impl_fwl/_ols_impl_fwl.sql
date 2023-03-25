@@ -99,7 +99,8 @@
                   format=None,
                   format_options=None,
                   group_by=None,
-                  alpha=None) -%}
+                  alpha=None,
+                  method_options=None) -%}
 {%- if (exog | length) == 0 %}
   {% do log('Note: exog was empty; running regression on constant term only.') %}
   {{ return(dbt_linreg._ols_0var(
@@ -185,16 +186,14 @@ _dbt_linreg_step0 as (
 {% for step in range(1, (exog | length)) %}
 _dbt_linreg_step{{ step }} as (
   with
-  _coefs as (
+  __dbt_linreg_coefs as (
     select
       {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(6) }}
       {#- Slope terms #}
-
       {%- for _y, _x, _o in dbt_linreg._traverse_slopes(step, exog_aliased) %}
       {%- set _c = dbt_linreg._orth_x_slope(_x, _o) %}
       {{ dbt_linreg.regress(_y, _c, add_constant=add_constant) }} as {{ _y }}_{{ _c }}_coef,
       {%- endfor %}
-
       {#- Constant terms #}
       {%- if add_constant %}
       {%- for _y, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
@@ -238,7 +237,7 @@ _dbt_linreg_step{{ step }} as (
     {%- endif %}
     {%- endfor %}
   from _dbt_linreg_step0 as b
-  {{ dbt_linreg._join_on_groups(group_by, 'b', '_coefs') | indent(2) }}
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '__dbt_linreg_coefs') | indent(2) }}
 ),
 {%- if loop.last %}
 _dbt_linreg_final_coefs as (
@@ -249,7 +248,7 @@ _dbt_linreg_final_coefs as (
       {%- for _x, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
       - avg({{ dbt_linreg._filter_and_center_if_alpha(_x, alpha, base_prefix='b.') }}) * {{ dbt_linreg.regress('b.y', dbt_linreg._orth_x_intercept('b.' ~ _x, _o)) }}
       {%- endfor %}
-      as const_coef,
+      as x0_coef,
     {%- endif %}
     {%- for _x, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
     {{ dbt_linreg.regress('b.y', dbt_linreg._orth_x_intercept(_x, _o), add_constant=add_constant) }} as {{ _x }}_coef
@@ -275,7 +274,8 @@ _dbt_linreg_final_coefs as (
     add_constant=add_constant,
     group_by=group_by,
     format=format,
-    format_options=format_options
+    format_options=format_options,
+    calculate_standard_error=False
   )
 }}
 )

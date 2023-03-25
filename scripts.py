@@ -1,4 +1,5 @@
 import os.path as op
+import warnings
 from typing import NamedTuple
 from typing import Optional
 from typing import Protocol
@@ -8,6 +9,13 @@ import pandas as pd
 import rich_click as click
 import statsmodels.api as sm
 from tabulate import tabulate
+
+
+# Suppress iteritems warning
+warnings.simplefilter("ignore", category=FutureWarning)
+
+# No scientific notation
+np.set_printoptions(suppress=True)
 
 
 DIR = op.dirname(__file__)
@@ -205,13 +213,13 @@ def cli():
 def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed: int):
     callback = ALL_TEST_CASES[table]
 
-    click.echo(click.style("=" * 80, fg="red"))
+    click.echo(click.style("=" * 80, fg="blue"))
     click.echo(
-        click.style("Test case: ", fg="red", bold=True)
+        click.style("Test case: ", fg="blue", bold=True)
         +
-        click.style(table, fg="red")
+        click.style(table, fg="blue")
     )
-    click.echo(click.style("=" * 80, fg="red"))
+    click.echo(click.style("=" * 80, fg="blue"))
 
     test_case = callback(size, seed)
 
@@ -219,10 +227,10 @@ def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed
         x_cols = test_case.x_cols
     else:
         # K plus Constant (1)
-        x_cols = test_case.x_cols[:columns]
+        x_cols = test_case.x_cols[:columns+1]
 
-    if const:
-        x_cols = ["const"] + x_cols
+    if not const:
+        x_cols = [i for i in x_cols if i != "const"]
 
     def _run_model(cond=None):
         if cond is None:
@@ -230,7 +238,10 @@ def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed
         y = test_case.df.loc[cond, test_case.y_col]
         x_mat = test_case.df.loc[cond, x_cols]
         if alpha:
-            alpha_arr = [0, *([alpha] * (len(x_mat.columns) - 1))]
+            if const:
+                alpha_arr = [0, *([alpha] * (len(x_mat.columns) - 1))]
+            else:
+                alpha_arr = [alpha] * len(x_mat.columns)
             model = sm.OLS(
                 y,
                 x_mat

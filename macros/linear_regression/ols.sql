@@ -8,7 +8,8 @@
              format_options=None,
              group_by=None,
              alpha=None,
-             method='fwl') -%}
+             method=None,
+             method_options=None) -%}
 
   {#############################################################################
 
@@ -40,6 +41,10 @@
     {% set format_options = {} %}
   {% endif %}
 
+  {% if method_options is none %}
+    {% set method_options = {} %}
+  {% endif %}
+
   {% if y is not none and endog is none %}
     {% set endog = y %}
   {% elif y is not none and endog is not none %}
@@ -67,6 +72,10 @@
 
   {% if alpha is not iterable and alpha is not none %}
     {% set alpha = [alpha] * (exog | length) %}
+  {% endif %}
+
+  {% if method is none %}
+    {% set method = 'chol' %}
   {% endif %}
 
   {# Check for user input errors #}
@@ -124,7 +133,21 @@
       ) }}
   {% endif %}
 
-  {% if method == 'fwl' %}
+  {% if method == 'chol' %}
+    {{ return(
+      dbt_linreg._ols_chol(
+        table=table,
+        endog=endog,
+        exog=exog,
+        add_constant=add_constant,
+        format=format,
+        format_options=format_options,
+        group_by=group_by,
+        alpha=alpha,
+        method_options=method_options
+      )
+    ) }}
+  {% elif method == 'fwl' %}
     {{ return(
       dbt_linreg._ols_fwl(
         table=table,
@@ -134,12 +157,13 @@
         format=format,
         format_options=format_options,
         group_by=group_by,
-        alpha=alpha
+        alpha=alpha,
+        method_options=method_options
       )
     ) }}
   {% else %}
     {{ exceptions.raise_compiler_error(
-      "Invalid method specified. The only currently valid method is 'fwl'"
+      "Invalid method specified. The only valid methods are 'chol' and 'fwl'"
     ) }}
   {% endif %}
 

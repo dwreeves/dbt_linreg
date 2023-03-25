@@ -1,144 +1,306 @@
-{{
-  config(
-    materialized="table",
-    tags=["perftest"]
-  )
-}}
-{#{%- set exog_aliased = ['x1', 'x2', 'x3', 'x4'] %}#}
-{%- set exog_aliased = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9'] %}
-with base as (
+{# In some warehouses, you can reference newly created column aliases
+   in the query you wrote.
+   If that's not available, the previous calc will be in the dict. #}
+{% macro _cell_or_alias(i, j, d) %}
+  {{ return(
+    adapter.dispatch('_cell_or_alias', 'dbt_linreg')
+    (i, j, d)
+  ) }}
+{% endmacro %}
 
+{% macro default___cell_or_alias(i, j, d) %}
+  {{ return(d[(i, j)]) }}
+{% endmacro %}
+
+{% macro snowflake___cell_or_alias(i, j, d) %}
+  {{ return('i' ~ i ~ 'j' ~ j) }}
+{% endmacro %}
+
+{% macro duckdb___cell_or_alias(i, j, d) %}
+  {{ return('i' ~ i ~ 'j' ~ j) }}
+{% endmacro %}
+
+{% macro _safe_sqrt(x, safe=True) %}
+  {{ return(
+    adapter.dispatch('_safe_sqrt', 'dbt_linreg')
+    (x, safe)
+  ) }}
+{% endmacro %}
+
+{% macro default___safe_sqrt(x, safe=True) %}
+  {% if safe %}
+    {{ return('case when ('~x~') >= 0 then sqrt('~x~') end') }}
+  {% endif %}
+  {{ return('sqrt('~x~')') }}
+{% endmacro %}
+
+{% macro bigquery___safe_sqrt(x, safe=True) %}
+  {% if safe %}
+    {{ return('safe.sqrt('~x~')') }}
+  {% endif %}
+  {{ return('sqrt('~x~')') }}
+{% endmacro %}
+
+{% macro _cholesky_decomposition(li, subquery_optimization=True, safe=True) %}
+  {% set d = {} %}
+  {% for i in li %}
+    {% for j in range(li[0], i + 1) %}
+      {% if i == li[0] and j == li[0] %}
+        {% do d.update({(i, j): dbt_linreg._safe_sqrt(x='x'~i~'x'~j, safe=safe)}) %}
+      {% else %}
+        {% set ns = namespace() %}
+        {% set ns.s = 'x'~j~'x'~i %}
+        {% for k in range(li[0], j) %}
+          {% if subquery_optimization and i != j %}
+            {% set ns.s = ns.s~'-'~dbt_linreg._cell_or_alias(i=i, j=k, d=d)~'*i'~j~'j'~k %}
+          {% else %}
+            {% set ns.s = ns.s~'-'~dbt_linreg._cell_or_alias(i=i, j=k, d=d)~'*'~dbt_linreg._cell_or_alias(i=j, j=k, d=d) %}
+          {% endif %}
+        {% endfor %}
+        {% if i == j %}
+          {% do d.update({(i, j): dbt_linreg._safe_sqrt(x=ns.s, safe=safe)}) %}
+        {% else %}
+          {% do d.update({(i, j): '('~ns.s~')/'~dbt_linreg._cell_or_alias(i=j, j=j, d=d)}) %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+  {{ return(d) }}
+{% endmacro %}
+
+{% macro _forward_substitution(li) %}
+  {% set d = {} %}
+  {% for i, j in modules.itertools.combinations_with_replacement(li, 2) %}
+    {% set ns = namespace() %}
+    {% if i == j %}
+      {% set ns.numerator = '1' %}
+    {% else %}
+      {% set ns.numerator = '(' %}
+      {% for k in range(i, j) %}
+        {% set ns.numerator = ns.numerator~'-i'~j~'j'~k~'*inv_'~dbt_linreg._cell_or_alias(i=i, j=k, d=d) %}
+      {% endfor %}
+      {% set ns.numerator = ns.numerator~')' %}
+    {% endif %}
+    {% do d.update({(i, j): '('~ns.numerator~'/i'~j~'j'~j~')'}) %}
+  {% endfor %}
+  {{ return(d) }}
+{% endmacro %}
+
+{% macro _ols_chol(table,
+                   endog,
+                   exog,
+                   add_constant=True,
+                   format=None,
+                   format_options=None,
+                   group_by=None,
+                   alpha=None,
+                   method_options=None) -%}
+{%- if (exog | length) == 0 %}
+  {% do log('Note: exog was empty; running regression on constant term only.') %}
+  {{ return(dbt_linreg._ols_0var(
+    table=table,
+    endog=endog,
+    exog=exog,
+    add_constant=add_constant,
+    format=format,
+    format_options=format_options,
+    group_by=group_by,
+    alpha=alpha
+  )) }}
+{%- endif %}
+{%- set subquery_optimization = method_options.get('subquery_optimization', True) %}
+{%- set safe_sqrt = method_options.get('safe', True) %}
+{%- set calculate_standard_error = format_options.get('calculate_standard_error', True) and format == 'long' %}
+{%- if add_constant %}
+  {% set xmin = 0 %}
+{%- else %}
+  {% set xmin = 1 %}
+{%- endif %}
+{%- set xcols = (range(xmin, (exog | length) + 1) | list) %}
+{%- set exog_aliased = dbt_linreg._alias_exog(exog) %}
+(with
+_dbt_linreg_base as (
   select
-    y,
+    {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
+    {{ endog }} as y,
+    {%- if add_constant %}
     1 as x0,
-    xa as x1,
-    xb as x2,
-    xc as x3,
-    xd as x4,
-    xe as x5,
-    xf as x6,
-    xg as x7,
-    xh as x8,
-    xi as x9,
-    xj as x10
-  from {{ ref('simple_matrix') }}
-
-),
-
-xtx as (
-
-  select
-    {%- for i, j in modules.itertools.combinations_with_replacement(range(exog_aliased|length), 2) %}
-    sum(x{{ i }} * x{{ j }}) as x{{ i }}x{{ j }}
+    {%- endif %}
+    {%- for i in range(1, (exog | length) + 1) %}
+    b.{{ exog[loop.index0] }} as x{{ i }}
     {%- if not loop.last -%}
     ,
     {%- endif %}
     {%- endfor %}
-  from base
-
+  from
+    {{ table }} as b
 ),
-
-chol as (
-
+_dbt_linreg_xtx as (
   select
-    {%- set d = {} %}
-    {%- for i in range((exog_aliased | length)) %}
-    {%- for j in range(i + 1) %}
-    {%- if i == 0 and j == 0 %}
-    {%- do d.update({(0, 0): 'sqrt(x0x0)'}) %}
+    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
+    {%- for i, j in modules.itertools.combinations_with_replacement(xcols, 2) %}
+    {%- if alpha and i == j and i > 0 %}
+    sum(b.x{{ i }} * b.x{{ j }} + {{ alpha[i-1] }}) as x{{ i }}x{{ j }}
     {%- else %}
-    {%- set ns = namespace() %}
-    {%- set ns.s = 'x'~j~'x'~i %}
-    {%- for k in range(j) %}
-    {%- set ns.s = ns.s~'-i'~i~'j'~k~'*i'~j~'j'~k %}
-{#-    {%- set ns.s = ns.s~'-'~d[(i,k)]~'*'~d[(j,k)] %}#}
-    {%- endfor %}
-    {%- if i == j %}
-    {%- do d.update({(i, j): 'sqrt('~ns.s~')'}) %}
-    {%- else %}
-    {%- do d.update({(i, j): '('~ns.s~')/i'~j~'j'~j}) %}
-{#-    {%- do d.update({(i, j): '('~ns.s~')/'~d[(j, j)]}) %}#}
+    sum(b.x{{ i }} * b.x{{ j }}) as x{{ i }}x{{ j }}
     {%- endif %}
+    {%- if not loop.last -%}
+    ,
     {%- endif %}
     {%- endfor %}
+  from _dbt_linreg_base as b
+  {%- if group_by %}
+  group by
+    {{ dbt_linreg._gb_cols(group_by) | indent(4) }}
+  {%- endif %}
+),
+_dbt_linreg_chol as (
+
+  {%- set d = dbt_linreg._cholesky_decomposition(li=xcols, subquery_optimization=subquery_optimization, safe=safe_sqrt) %}
+  {%- if subquery_optimization %}
+  {%- for i in (xcols | reverse) %}
+  select
+    *,
+    {%- for j in range(xmin, i + 1) %}
+    {{ d[(i, j)] }} as i{{ i }}j{{ j }}
+    {%- if not loop.last -%}
+    ,
+    {%- endif %}
     {%- endfor %}
+  {%- if not loop.last %}
+  from (
+  {%- else %}
+  from _dbt_linreg_xtx{{ ')' * ((xcols | length) - 1) }}
+  {%- endif %}
+  {%- endfor %}
+  {%- else %}
+  select
+    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     {%- for k, v in d.items() %}
     {{ v }} as {{ 'i'~k[0]~'j'~k[1] }}
     {%- if not loop.last -%}
     ,
     {%- endif %}
     {%- endfor %}
-  from xtx
-
-),
-
-inverse_chol as (
-
-  select
-    {%- set d = {} %}
-    {%- for i, j in modules.itertools.combinations_with_replacement(range((exog_aliased | length)), 2) %}
-    {%- set ns = namespace() %}
-    {%- if i == j %}
-    {%- set ns.numerator = '1' %}
-    {%- else %}
-    {%- set ns.numerator = '(' %}
-    {%- for k in range(i, j) %}
-{#-    {%- set ns.numerator = ns.numerator~'-i'~j~'j'~k~'*'~d[(i, k)] %}#}
-    {%- set ns.numerator = ns.numerator~'-i'~j~'j'~k~'*inv_i'~i~'j'~k %}
-    {%- endfor %}
-    {%- set ns.numerator = ns.numerator~')' %}
+  from _dbt_linreg_xtx
     {%- endif %}
-    {%- do d.update({(i, j): '('~ns.numerator~'/i'~j~'j'~j~')'}) %}
+),
+_dbt_linreg_inverse_chol as (
+  {#- The optimal way to calculate is to do each diagonal at a time. #}
+  {%- set d = dbt_linreg._forward_substitution(li=xcols) %}
+  {%- if subquery_optimization %}
+  {%- set upto = (xcols | length) %}
+  {%- for gap in (range(0, upto) | reverse) %}
+  select *,
+    {%- for j in range(gap + xmin, upto + xmin) %}
+    {%- set i = j - gap %}
+    {{ d[(i, j)] }} as inv_i{{ i }}j{{ j }}
+    {%- if not loop.last -%}
+    ,
+    {%- endif %}
     {%- endfor %}
+  {%- if not loop.last %}
+  from (
+  {%- else %}
+  from _dbt_linreg_chol{{ ')' * (upto - 1) }}
+  {%- endif %}
+  {%- endfor %}
+  {%- else %}
+  select
+    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     {%- for k, v in d.items() %}
     {{ v }} as inv_{{ 'i'~k[0]~'j'~k[1] }}
     {%- if not loop.last -%}
     ,
     {%- endif %}
     {%- endfor %}
-  from chol
-
+  from _dbt_linreg_chol
+  {%- endif %}
 ),
-
-inverse_xtx as (
-
+_dbt_linreg_inverse_xtx as (
   select
-    {%- for i, j in modules.itertools.combinations_with_replacement(range((exog_aliased | length)), 2) %}
-    {%- for k in range(j, (exog_aliased | length)) %}
-    inv_i{{ i }}j{{ k }} * inv_i{{ j }}j{{ k }}
-    {%- if not loop.last %} + {% endif -%}
+    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
+    {%- for i, j in modules.itertools.combinations_with_replacement(xcols, 2) %}
+    {%- set upto = (xcols | length) %}
+    {%- if not add_constant %}
+      {%- set upto = upto + 1 %}
+    {%- endif %}
+    {%- for k in range(j, upto) %}
+    inv_i{{ i }}j{{ k }} * inv_i{{ j }}j{{ k }}{%- if not loop.last %} + {% endif -%}
     {%- endfor %}
     as inv_x{{ i }}x{{ j }}
     {%- if not loop.last -%}
     ,
     {%- endif %}
     {%- endfor %}
-  from inverse_chol
-
+  from _dbt_linreg_inverse_chol
 ),
-
-linreg as (
-
+_dbt_linreg_final_coefs as (
   select
-    {%- for x1 in range(exog_aliased|length) %}
+    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
+    {%- for x1 in xcols %}
     sum((
-    {%- for x2 in range(exog_aliased|length) %}
+    {%- for x2 in xcols %}
       {%- if x2 > x1 %}
-      x{{ x2 }} * inv_x{{ x1 }}x{{ x2 }}
+      b.x{{ x2 }} * inv_x{{ x1 }}x{{ x2 }}
       {%- else %}
-      x{{ x2 }} * inv_x{{ x2 }}x{{ x1 }}
+      b.x{{ x2 }} * inv_x{{ x2 }}x{{ x1 }}
       {%- endif %}
       {%- if not loop.last %} + {% endif -%}
     {%- endfor %}
-    ) * y) as x{{ x1 }}_coef
+    ) * b.y) as x{{ x1 }}_coef
     {%- if not loop.last -%}
     ,
     {%- endif %}
     {%- endfor %}
   from
-    base,
-    inverse_xtx
-
+    _dbt_linreg_base as b
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_inverse_xtx') | indent(2) }}
+  {%- if group_by %}
+  group by
+    {{ dbt_linreg._gb_cols(group_by, prefix='b') | indent(4) }}
+  {%- endif %}
+){%- if calculate_standard_error %},
+_dbt_linreg_resid as (
+  select
+    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
+    var_pop(y
+      {%- for x in xcols %}
+      - x{{ x }} * x{{ x }}_coef
+      {%- endfor %}
+    ) as resid_var,
+    count(*) as n
+  from
+    _dbt_linreg_base as b
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_final_coefs') | indent(2) }}
+  {%- if group_by %}
+  group by
+    {{ dbt_linreg._gb_cols(group_by, prefix='b') | indent(2) }}
+  {%- endif %}
+),
+_dbt_linreg_stderrs as (
+  select
+    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
+    {%- for x in xcols %}
+    sqrt(inv_x{{ x }}x{{ x }} * resid_var * n / (n - {{ xcols | length }})) as x{{ x }}_stderr
+    {%- if not loop.last -%}
+    ,
+    {%- endif %}
+    {%- endfor %}
+  from
+    _dbt_linreg_resid as b
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_inverse_xtx') | indent(2) }}
 )
-
-select * from linreg
+{%- endif %}
+{{
+  dbt_linreg.final_select(
+    exog=exog,
+    exog_aliased=exog_aliased,
+    add_constant=add_constant,
+    group_by=group_by,
+    format=format,
+    format_options=format_options,
+    calculate_standard_error=calculate_standard_error
+  )
+}})
+{% endmacro %}

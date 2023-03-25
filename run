@@ -2,18 +2,30 @@
 
 set -eo pipefail
 
+
+
 function setup {
 	poetry install
 	poetry run pre-commit install
 }
 
+function testloc {
+  # rm -f integration_tests/dbt.duckdb
+  export DBT_PROFILES_DIR=./integration_tests/profiles
+  poetry run dbt deps --project-dir ./integration_tests
+  # poetry run dbt compile --project-dir ./integration_tests --select tag:perftest
+  poetry run dbt run --project-dir ./integration_tests --select tag:perftest
+}
+
+
 function test {
   # rm -f integration_tests/dbt.duckdb
-  # poetry run python scripts.py gen-test-cases
-  poetry run dbt deps --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
-  # poetry run dbt seed --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
-  poetry run dbt run --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
-  poetry run dbt test --project-dir ./integration_tests/ --profiles-dir ./integration_tests/profiles
+  export DBT_PROFILES_DIR=./integration_tests/profiles
+  poetry run python scripts.py gen-test-cases
+  poetry run dbt deps --project-dir ./integration_tests
+  poetry run dbt seed --project-dir ./integration_tests
+  poetry run dbt run --project-dir ./integration_tests
+  poetry run dbt test --project-dir ./integration_tests
 }
 
 function lint {

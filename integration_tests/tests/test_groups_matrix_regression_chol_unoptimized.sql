@@ -21,7 +21,7 @@ expected as (
 )
 
 select base.variable_name
-from {{ ref('groups_matrix_regression_chol') }} as base
+from {{ ref('groups_matrix_regression_chol_unoptimized') }} as base
 full outer join expected
 on
   base.gb_var = expected.gb_var
