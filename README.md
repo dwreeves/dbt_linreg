@@ -30,7 +30,7 @@ Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - package: "dwreeves/dbt_linreg"
-    version: "0.1.2"
+    version: "0.2.0"
 ```
 
 The full file will look something like this:
@@ -41,7 +41,7 @@ packages:
   # Other packages here
   # ...
   - package: "dwreeves/dbt_linreg"
-    version: "0.1.2"
+    version: "0.2.0"
 ```
 
 # Examples
@@ -69,14 +69,14 @@ select * from {{
 
 Output:
 
-|variable_name|coefficient|
-|---|---|
-|const|10.0|
-|xa|3.0|
-|xb|5.0|
-|xc|7.0|
+|variable_name|coefficient|standard_error|t_statistic|
+|---|---|---|
+|const|10.0|0.00462|2163.27883|
+|xa|5.0|0.46226|10.81639|
+|xb|7.0|0.46226|15.14295|
+|xc|9.0|0.46226|19.46951|
 
-Note: `simple_matrix` is one of the test cases.
+Note: `simple_matrix` is one of the test cases, so you can try this yourself! Standard errors are constant across `xa`, `xb`, `xc`, because `simple_matrix` is orthonormal.
 
 ### Complex example
 
@@ -188,7 +188,7 @@ def ols(
     format_options: Optional[dict[str, Any]] = None,
     group_by: Optional[Union[str, list[str]]] = None,
     alpha: Optional[Union[float, list[float]]] = None,
-    method: Literal['fwl'] = 'fwl'
+    method: Literal['chol', 'fwl'] = 'chol'
 ):
     ...
 ```
@@ -199,13 +199,14 @@ Where:
 - **endog**: The endogenous variable / y variable / target variable of the regression. (You can also specify `y=...` instead of `endog=...` if you prefer.)
 - **exog**: The endogenous variable / y variable / target variable of the regression. (You can also specify `x=...` instead of `exog=...` if you prefer.)
 - **add_constant**: If true, a constant term is added automatically to the regression.
-- **format**: Either "wide" or "long" format for coefficients.
+- **format**: Either "wide" or "long" format for coefficients. See **Formats and format options** for more.
   - If `wide`, the variables span the columns with their original variable names, and the coefficients fill a single row.
   - If `long`, the coefficients are in a single column called `coefficient`, and the variable names are in a single column called `variable_name`.
 - **format_options**: See **Formats and format options** section for more.
 - **group_by**: If specified, the regression will be grouped by these variables, and individual regressions will run on each group.
 - **alpha**: If not null, the regression will be run as a ridge regression with a penalty of `alpha`. See **Notes** section for more information.
-- **method**: The way the regression is calculated. Right now, only `'fwl'` is a valid option. See **FAQ** section for implementation details.
+- **method**: The method used to calculate the regression. See **Methods and method options** for more.
+- **method_options**: Options specific to the estimation method. See **Methods and method options** for more.
 
 # Formats and format options
 
@@ -219,9 +220,15 @@ All formats have their own format options, which can be passed into the `format_
 
 - **round** (default = `None`): If not None, round all coefficients to `round` number of digits.
 - **constant_name** (default = `'const'`): String name that refers to constant term.
-- **variable_column_name** (default = `'variable_name'`): Column name storing strings of .
+- **variable_column_name** (default = `'variable_name'`): Column name storing strings of variable names.
 - **coefficient_column_name** (default = `'coefficient'`): Column name storing model coefficients.
 - **strip_quotes** (default = `True`): If true, strip outer quotes from column names if provided; if false, always use string literals.
+
+These options are available for `format='long'` only when `method='chol'`:
+
+- **calculate_standard_error** (default = `True if not alpha else False`): If true, provide the standard error in the output.
+- **standard_error_column_name** (default = `'standard_error'`): Column name storing the standard error for the parameter.
+-- **t_statistic_column_name** (default = `'t_statistic'`): Column name storing the t-statistic for the parameter.
 
 ### Options for `format='wide'`
 
@@ -230,9 +237,43 @@ All formats have their own format options, which can be passed into the `format_
 - **variable_column_prefix** (default = `None`): If not None, prefix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)
 - **variable_column_suffix** (default = `None`): If not None, suffix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)
 
-# Notes
+# Methods and method options
 
-- ⚠️ **Please be aware that this implementation is very inefficient for large numbers of columns!** I believe the time complexity of the Jinja templating is O(2^K). I would suggest not going over 5 or 6 features for a single regression.
+There are currently two valid methods for calculating regression coefficients:
+
+- `chol`: Uses Cholesky decomposition to calculate the pseudo-inverse.
+- `fwl`: Uses a "Frisch univariate regressions
+
+## `chol` method
+
+**👍 This is the suggested method (and the default) for calculating regressions!**
+
+This method calculates regression coefficients using the Moore-Penrose pseudo-inverse, and the inverse of **X'X** is calculated using Cholesky decomposition, hence it is referred to as `chol`.
+
+### Options for `method='chol'`
+
+Specify these in a dict using the `method_options=` kwarg:
+
+- **safe** (default = `True`): If True, returns null coefficients instead of an error when X is perfectly multicollinear. If False, a negative value will be passed into a SQRT(), and most SQL engines will raise an error when this happens.
+- **subquery_optimization** (default = `True`): If True, nested subqueries are used during some of the steps to optimize the query speed. If false, the query is flattened. Note that turning this off can significantly degrade performance.
+
+## `fwl` method
+
+**This method is generally not recommended.**
+
+Simple univariate regression coefficients are simply `covar_pop(y, x) / var_pop(x)`.
+
+The multiple regression implementation uses a technique described in section `3.2.3 Multiple Regression from Simple Univariate Regression` of TEoSL ([source](https://hastie.su.domains/Papers/ESLII.pdf#page=71)). Econometricians know this as the Frisch-Waugh-Lowell theorem, hence the method is referred to as `fwl` internally in the code base.
+
+Ridge regression is implemented using the augmentation technique described in Exercise 12 of Chapter 3 of TEoSL ([source](https://hastie.su.domains/Papers/ESLII.pdf#page=115)).
+
+There are a few reasons why this method is discouraged over the `chol` method:
+
+- 🐌 It tends to be much slower, and struggles to efficiently calculate large number of columns.
+- 📊 It does not calculate standard errors.
+- 😕 For ridge regression, coefficients are not accurate; they tend to be off by a magnitude of ~0.01%.
+
+# Notes
 
 - ⚠️ **If your coefficients are null, it does not mean dbt_linreg is broken, it most likely means your feature columns are perfectly multicollinear.** If you are 100% sure that is not the issue, please file a bug report with a minimally reproducible example.
 
@@ -240,8 +281,6 @@ All formats have their own format options, which can be passed into the `format_
   - A scalar input (e.g. `alpha=0.01`) will apply an alpha of `0.01` to all features.
   - An array input (e.g. `alpha=[0.01, 0.02, 0.03, 0.04, 0.05]`) will apply an alpha of `0.01` to the first column, `0.02` to the second column, etc.
   - `alpha` is equivalent to what TEoSL refers to as "lambda," times the sample size N. That is to say: `α ≡ λ * N`.
-
-- Ridge regression coefficients tend to be slightly off Statsmodels's ridge regression coefficients, but by no more than a 0.01% deviation in my experience (this 0.01% threshold is enforced in the integration tests).
 
 ### Possible future features
 
@@ -255,11 +294,7 @@ Some things I am thinking about working on down the line:
 
 ### How does this work?
 
-Simple univariate regression coefficients are simply `covar_pop(y, x) / var_pop(x)`.
-
-The multiple regression implementation uses a technique described in section `3.2.3 Multiple Regression from Simple Univariate Regression` of TEoSL ([source](https://hastie.su.domains/Papers/ESLII.pdf#page=71)). Econometricians know this as the Frisch-Waugh-Lowell theorem, hence the method is referred to as `'fwl'` internally in the code base.
-
-Ridge regression is implemented using the augmentation technique described in Exercise 12 of Chapter 3 of TEoSL ([source](https://hastie.su.domains/Papers/ESLII.pdf#page=115)).
+See **Methods and method options** section for a full breakdown of each linear regression implementation.
 
 All approaches were validated using Statsmodels `sm.OLS()`. Note that the ridge regression coefficients differ very slightly from Statsmodels's outputs for currently unknown reasons, but the coefficients are very close (I enforce a `<0.01%` deviation from Statsmodels's ridge regression coefficients in my integration tests).
 
@@ -286,6 +321,12 @@ I opt to leave out dummy variable support because it's tricky, and I want to kee
 Note that you couldn't simply add categorical variables in the same list as numeric variables because Jinja2 templating is not natively aware of the types you're feeding through it, nor does Jinja2 know the values that a string variable can take on. The way you would actually implement categorical variables is with `group by` trickery (i.e. center both y and X by categorical variable group means), although I am not sure how to do that efficiently for more than one categorical variable column.
 
 If you'd like to regress on a categorical variable, for now you'll need to do your own feature engineering, e.g. `(foo = 'bar')::int as foo_bar`
+
+### Why are there no p-values?
+
+This is planned for the future, so stay tuned! P-values would require a lookup on a dimension table, which is a significant amount of work to manage nicely, but I hope to get to it soon.
+
+In the meanwhile, you can implement this yourself-- just create a dimension table that left joins a t-statistic on a half-open interval to lookup a p-value.
 
 # Trademark & Copyright
 

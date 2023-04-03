@@ -2,6 +2,11 @@
 
 ### `0.1.2`
 
+- Add `chol` method to `dbt_linreg.ols()`, and also set as the default method. (This method is significantly faster than `fwl`, and has a few other benefits.)
+- Add standard error column in `long` format for `chol` method.
+
+### `0.1.2`
+
 - Added the ability to turn off/on the constant term with `add_constant: bool = True` kwarg.
 - Fixed error that occurred when rendering a 1-variable ridge regression.
 

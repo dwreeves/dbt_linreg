@@ -9,7 +9,8 @@ select * from {{
     endog='y',
     exog=['x1', 'x2', 'x3'],
     group_by=['gb_var'],
-    format='long'
+    format='long',
+    method='chol'
   )
 }}
 order by gb_var, variable_name

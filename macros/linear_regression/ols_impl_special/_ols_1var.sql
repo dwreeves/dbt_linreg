@@ -55,7 +55,7 @@ _dbt_linreg_final_coefs as (
     {%- if add_constant %}
     avg({{ dbt_linreg._filter_and_center_if_alpha('b.y', alpha) }})
       - avg({{ dbt_linreg._filter_and_center_if_alpha('b.x1', alpha) }}) * {{ dbt_linreg.regress('b.y', 'b.x1') }}
-      as const_coef,
+      as x0_coef,
     {%- endif %}
     {{ dbt_linreg.regress('b.y', 'b.x1', add_constant=add_constant) }} as x1_coef
   from _dbt_linreg_base as b
@@ -74,7 +74,8 @@ _dbt_linreg_final_coefs as (
     add_constant=add_constant,
     group_by=group_by,
     format=format,
-    format_options=format_options
+    format_options=format_options,
+    calculate_standard_error=False
   )
 }}
 )

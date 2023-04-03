@@ -38,24 +38,36 @@
                       add_constant=True,
                       format=None,
                       format_options=None,
-                      round_=None) -%}
+                      calculate_standard_error=False) -%}
 {%- if format == 'long' %}
 {%- if add_constant %}
 select
-  {{ dbt_linreg._unalias_gb_cols(group_by) }}
+  {{ dbt_linreg._unalias_gb_cols(group_by, prefix='b') | indent(2) }}
   '{{ format_options.get('constant_name', 'const') }}' as {{ format_options.get('variable_column_name', 'variable_name') }},
-  {{ dbt_linreg._fmt_final_coef('const', format_options.get('round')) }} as {{ format_options.get('coefficient_column_name', 'coefficient') }}
-from _dbt_linreg_final_coefs
+  {{ dbt_linreg._maybe_round('x0_coef', format_options.get('round')) }} as {{ format_options.get('coefficient_column_name', 'coefficient') }}{% if calculate_standard_error %},
+  {{ dbt_linreg._maybe_round('x0_stderr', format_options.get('round')) }} as {{ format_options.get('standard_error_column_name', 'standard_error') }},
+  {{ dbt_linreg._maybe_round('x0_coef/x0_stderr', format_options.get('round')) }} as {{ format_options.get('t_statistic_column_name', 't_statistic') }}
+  {%- endif %}
+from _dbt_linreg_final_coefs as b
+{%- if calculate_standard_error %}
+{{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_stderrs') }}
+{%- endif %}
 {%- if exog_aliased %}
 union all
 {%- endif %}
 {%- endif %}
 {%- for i in exog_aliased %}
 select
-  {{ dbt_linreg._unalias_gb_cols(group_by) }}
-  '{{ dbt_linreg._strip_quotes(exog[loop.index0], format_options) }}' as variable_name,
-  {{ dbt_linreg._fmt_final_coef(i, format_options.get('round')) }} as coefficient
-from _dbt_linreg_final_coefs
+  {{ dbt_linreg._unalias_gb_cols(group_by, prefix='b') | indent(2) }}
+  '{{ dbt_linreg._strip_quotes(exog[loop.index0], format_options) }}' as {{ format_options.get('variable_column_name', 'variable_name') }},
+  {{ dbt_linreg._maybe_round(i~'_coef', format_options.get('round')) }} as {{ format_options.get('coefficient_column_name', 'coefficient') }}{% if calculate_standard_error %},
+  {{ dbt_linreg._maybe_round(i~'_stderr', format_options.get('round')) }} as {{ format_options.get('standard_error_column_name', 'standard_error') }},
+  {{ dbt_linreg._maybe_round(i~'_coef/'~i~'_stderr', format_options.get('round')) }} as {{ format_options.get('t_statistic_column_name', 't_statistic') }}
+  {%- endif %}
+from _dbt_linreg_final_coefs as b
+{%- if calculate_standard_error %}
+{{ dbt_linreg._join_on_groups(group_by, 'b', '_dbt_linreg_stderrs') }}
+{%- endif %}
 {%- if not loop.last %}
 union all
 {%- endif %}
@@ -63,14 +75,14 @@ union all
 {%- elif format == 'wide' %}
 select
   {%- if add_constant -%}
-  {{ dbt_linreg._unalias_gb_cols(group_by) }}
-  {{ dbt_linreg._fmt_final_coef('const', format_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(format_options.get('constant_name', 'const'), format_options) }}
+  {{ dbt_linreg._unalias_gb_cols(group_by) | indent(2) }}
+  {{ dbt_linreg._maybe_round('x0_coef', format_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(format_options.get('constant_name', 'const'), format_options) }}
   {%- if exog_aliased -%}
   ,
   {%- endif -%}
   {%- endif -%}
   {%- for i in exog_aliased %}
-  {{ dbt_linreg._fmt_final_coef(i, format_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(exog[loop.index0], format_options) }}
+  {{ dbt_linreg._maybe_round(i~'_coef', format_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(exog[loop.index0], format_options) }}
   {%- if not loop.last -%}
   ,
   {%- endif %}
@@ -128,21 +140,25 @@ select * from _dbt_linreg_final_coefs
 {%- endmacro %}
 
 {# This macros reverses gb column aliases at the end of an OLS query. #}
-{% macro _unalias_gb_cols(group_by) -%}
+{% macro _unalias_gb_cols(group_by, prefix=None) -%}
 {%- if group_by %}
 {%- for gb in group_by %}
+{%- if prefix %}
+{{ prefix }}.gb{{ loop.index }} as {{ gb }},
+{%- else %}
 gb{{ loop.index }} as {{ gb }},
+{%- endif %}
 {%- endfor %}
 {%- endif %}
 {%- endmacro %}
 
 {# Round the final coefficient if the user specifies the `round` format
    option. Otherwise, keep as is. #}
-{% macro _fmt_final_coef(x, round_) %}
+{% macro _maybe_round(x, round_) %}
 {% if round_ is not none %}
-  {{ return('round(' ~ x ~ '_coef, ' ~ round_ ~ ')') }}
+  {{ return('round(' ~ x ~ ', ' ~ round_ ~ ')') }}
 {% else %}
-  {{ return(x ~ '_coef') }}
+  {{ return(x) }}
 {% endif %}
 {% endmacro %}
 
@@ -169,4 +185,22 @@ gb{{ loop.index }}
   {% do li.append('x' ~ loop.index) %}
 {% endfor %}
 {{ return(li) }}
+{%- endmacro %}
+
+{# Join on gb1, gb2 etc. from a table to another table.
+   If there is no group by column, assume `join_to` is just 1 row.
+   And in that case, just do a cross join. #}
+{% macro _join_on_groups(group_by, join_from, join_to) -%}
+{%- if not group_by %}
+cross join {{ join_to }}
+{%- else %}
+inner join {{ join_to }}
+on
+  {%- for _ in group_by %}
+  {{ join_from }}.gb{{ loop.index }} = {{ join_to }}.gb{{ loop.index }}
+  {%- if not loop.last -%}
+  and
+  {%- endif %}
+  {%- endfor %}
+{%- endif %}
 {%- endmacro %}

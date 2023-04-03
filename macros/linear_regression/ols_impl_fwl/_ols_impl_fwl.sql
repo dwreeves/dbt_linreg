@@ -1,18 +1,3 @@
-{% macro _join_on_groups(group_by, join_from, join_to) -%}
-{%- if not group_by %}
-cross join {{ join_to }}
-{%- else %}
-inner join {{ join_to }}
-on
-  {%- for _ in group_by %}
-  {{ join_from }}.gb{{ loop.index }} = {{ join_to }}.gb{{ loop.index }}
-  {%- if not loop.last -%}
-  and
-  {%- endif %}
-  {%- endfor %}
-{%- endif %}
-{%- endmacro %}
-
 {% macro _traverse_slopes(step, x) -%}
   {%- set li = [] %}
   {%- for i in x %}
@@ -84,6 +69,29 @@ on
   {{ return(x ~ '_' ~ (li | join(''))) }}
 {% endmacro %}
 
+{% macro _regress_or_alias(y, x, add_constant=True) %}
+  {{ return(
+    adapter.dispatch('_regress_or_alias', 'dbt_linreg')
+    (y, x, add_constant=add_constant)
+  ) }}
+{% endmacro %}
+
+{# In some but not all query engines, you can select from other columns.
+   Doing this keeps the compiled SQL cleaner, and for large regressions can
+   slightly improve the query planner speed (albeit not the execution). #}
+{% macro default___regress_or_alias(y, x, add_constant=True) %}
+  {{ return(regress(y, x, add_constant=add_constant)) }}
+{% endmacro %}
+
+{% macro snowflake___regress_or_alias(y, x, add_constant=True) %}
+  {{ return(y ~ '_' ~ x ~ '_coef') }}
+{% endmacro %}
+
+{% macro duckdb___regress_or_alias(y, x, add_constant=True) %}
+  {{ return(y ~ '_' ~ x ~ '_coef') }}
+{% endmacro %}
+
+
 {% macro _ols_fwl(table,
                   endog,
                   exog,
@@ -91,7 +99,8 @@ on
                   format=None,
                   format_options=None,
                   group_by=None,
-                  alpha=None) -%}
+                  alpha=None,
+                  method_options=None) -%}
 {%- if (exog | length) == 0 %}
   {% do log('Note: exog was empty; running regression on constant term only.') %}
   {{ return(dbt_linreg._ols_0var(
@@ -177,23 +186,21 @@ _dbt_linreg_step0 as (
 {% for step in range(1, (exog | length)) %}
 _dbt_linreg_step{{ step }} as (
   with
-  _coefs as (
+  __dbt_linreg_coefs as (
     select
       {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(6) }}
       {#- Slope terms #}
-
       {%- for _y, _x, _o in dbt_linreg._traverse_slopes(step, exog_aliased) %}
       {%- set _c = dbt_linreg._orth_x_slope(_x, _o) %}
       {{ dbt_linreg.regress(_y, _c, add_constant=add_constant) }} as {{ _y }}_{{ _c }}_coef,
       {%- endfor %}
-
       {#- Constant terms #}
       {%- if add_constant %}
       {%- for _y, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
       avg({{ dbt_linreg._filter_if_alpha(_y, alpha) }})
       {%- for _yi, _xi in _o %}
       {%- set _ci = dbt_linreg._orth_x_slope(_yi, _xi) %}
-        - avg({{ dbt_linreg._filter_if_alpha(_yi, alpha) }}) * {{ dbt_linreg.regress(_yi, _ci) }}
+        - avg({{ dbt_linreg._filter_if_alpha(_yi, alpha) }}) * {{ dbt_linreg._regress_or_alias(_y, _ci) }}
       {%- endfor %}
         as {{ dbt_linreg._orth_x_intercept(_y, _o) }}_const
       {%- if not loop.last -%}
@@ -230,7 +237,7 @@ _dbt_linreg_step{{ step }} as (
     {%- endif %}
     {%- endfor %}
   from _dbt_linreg_step0 as b
-  {{ dbt_linreg._join_on_groups(group_by, 'b', '_coefs') | indent(2) }}
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '__dbt_linreg_coefs') | indent(2) }}
 ),
 {%- if loop.last %}
 _dbt_linreg_final_coefs as (
@@ -241,7 +248,7 @@ _dbt_linreg_final_coefs as (
       {%- for _x, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
       - avg({{ dbt_linreg._filter_and_center_if_alpha(_x, alpha, base_prefix='b.') }}) * {{ dbt_linreg.regress('b.y', dbt_linreg._orth_x_intercept('b.' ~ _x, _o)) }}
       {%- endfor %}
-      as const_coef,
+      as x0_coef,
     {%- endif %}
     {%- for _x, _o in dbt_linreg._traverse_intercepts(step, exog_aliased) %}
     {{ dbt_linreg.regress('b.y', dbt_linreg._orth_x_intercept(_x, _o), add_constant=add_constant) }} as {{ _x }}_coef
@@ -267,7 +274,8 @@ _dbt_linreg_final_coefs as (
     add_constant=add_constant,
     group_by=group_by,
     format=format,
-    format_options=format_options
+    format_options=format_options,
+    calculate_standard_error=False
   )
 }}
 )
