@@ -242,7 +242,7 @@ These options are available for `format='long'` only when `method='chol'`:
 There are currently two valid methods for calculating regression coefficients:
 
 - `chol`: Uses Cholesky decomposition to calculate the pseudo-inverse.
-- `fwl`: Uses a "Frisch-Waugh-Lowell" approach, which consists of calculating univariate regressions to get multiple regression coefficients.
+- `fwl`: Uses a "Frisch-Waugh-Lovell" approach, which consists of calculating univariate regressions to get multiple regression coefficients.
 
 ## `chol` method
 
@@ -263,7 +263,7 @@ Specify these in a dict using the `method_options=` kwarg:
 
 Simple univariate regression coefficients are simply `covar_pop(y, x) / var_pop(x)`.
 
-The multiple regression implementation uses a technique described in section `3.2.3 Multiple Regression from Simple Univariate Regression` of TEoSL ([source](https://hastie.su.domains/Papers/ESLII.pdf#page=71)). Econometricians know this as the Frisch-Waugh-Lowell theorem, hence the method is referred to as `fwl` internally in the code base.
+The multiple regression implementation uses a technique described in section `3.2.3 Multiple Regression from Simple Univariate Regression` of TEoSL ([source](https://hastie.su.domains/Papers/ESLII.pdf#page=71)). Econometricians know this as the Frisch-Waugh-Lovell theorem, hence the method is referred to as `fwl` internally in the code base.
 
 Ridge regression is implemented using the augmentation technique described in Exercise 12 of Chapter 3 of TEoSL ([source](https://hastie.su.domains/Papers/ESLII.pdf#page=115)).
 
