@@ -242,7 +242,7 @@ These options are available for `format='long'` only when `method='chol'`:
 There are currently two valid methods for calculating regression coefficients:
 
 - `chol`: Uses Cholesky decomposition to calculate the pseudo-inverse.
-- `fwl`: Uses a "Frisch univariate regressions
+- `fwl`: Uses a "Frisch-Waugh-Lowell" approach, which consists of calculating univariate regressions to get multiple regression coefficients.
 
 ## `chol` method
 
