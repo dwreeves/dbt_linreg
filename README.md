@@ -70,7 +70,7 @@ select * from {{
 Output:
 
 |variable_name|coefficient|standard_error|t_statistic|
-|---|---|---|
+|---|---|---|---|
 |const|10.0|0.00462|2163.27883|
 |xa|5.0|0.46226|10.81639|
 |xb|7.0|0.46226|15.14295|
