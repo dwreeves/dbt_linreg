@@ -228,7 +228,7 @@ These options are available for `format='long'` only when `method='chol'`:
 
 - **calculate_standard_error** (default = `True if not alpha else False`): If true, provide the standard error in the output.
 - **standard_error_column_name** (default = `'standard_error'`): Column name storing the standard error for the parameter.
--- **t_statistic_column_name** (default = `'t_statistic'`): Column name storing the t-statistic for the parameter.
+- **t_statistic_column_name** (default = `'t_statistic'`): Column name storing the t-statistic for the parameter.
 
 ### Options for `format='wide'`
 
