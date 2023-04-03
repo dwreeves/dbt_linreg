@@ -1,6 +1,6 @@
 # Changelog
 
-### `0.1.2`
+### `0.2.0`
 
 - Add `chol` method to `dbt_linreg.ols()`, and also set as the default method. (This method is significantly faster than `fwl`, and has a few other benefits.)
 - Add standard error column in `long` format for `chol` method.
