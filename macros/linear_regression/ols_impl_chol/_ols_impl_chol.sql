@@ -110,7 +110,12 @@
 {%- endif %}
 {%- set subquery_optimization = method_options.get('subquery_optimization', True) %}
 {%- set safe_sqrt = method_options.get('safe', True) %}
-{%- set calculate_standard_error = format_options.get('calculate_standard_error', True) and format == 'long' %}
+{%- set calculate_standard_error = format_options.get('calculate_standard_error', (not alpha)) and format == 'long' %}
+{%- if alpha and calculate_standard_error %}
+  {% do log(
+    'Warning: Standard errors are NOT designed to take into account ridge regression regularization.'
+  ) %}
+{%- endif %}
 {%- if add_constant %}
   {% set xmin = 0 %}
 {%- else %}
@@ -264,11 +269,11 @@ _dbt_linreg_final_coefs as (
 _dbt_linreg_resid as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
-    var_pop(y
+    avg(pow(y
       {%- for x in xcols %}
       - x{{ x }} * x{{ x }}_coef
       {%- endfor %}
-    ) as resid_var,
+    , 2)) as resid_square_mean,
     count(*) as n
   from
     _dbt_linreg_base as b
@@ -282,7 +287,7 @@ _dbt_linreg_stderrs as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
     {%- for x in xcols %}
-    sqrt(inv_x{{ x }}x{{ x }} * resid_var * n / (n - {{ xcols | length }})) as x{{ x }}_stderr
+    sqrt(inv_x{{ x }}x{{ x }} * resid_square_mean * n / (n - {{ xcols | length }})) as x{{ x }}_stderr
     {%- if not loop.last -%}
     ,
     {%- endif %}

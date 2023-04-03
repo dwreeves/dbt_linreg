@@ -2,8 +2,6 @@
 
 set -eo pipefail
 
-
-
 function setup {
 	poetry install
 	poetry run pre-commit install
@@ -16,7 +14,6 @@ function testloc {
   # poetry run dbt compile --project-dir ./integration_tests --select tag:perftest
   poetry run dbt run --project-dir ./integration_tests --select tag:perftest
 }
-
 
 function test {
   # rm -f integration_tests/dbt.duckdb

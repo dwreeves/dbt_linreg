@@ -30,5 +30,6 @@ on
   base.gb_var = expected.gb_var
   and base.variable_name = expected.variable_name
 where
-  round(base.coefficient, 7) - round(expected.coefficient, 7)
+  round(base.coefficient, 7) != round(expected.coefficient, 7)
   or base.coefficient is null
+  or expected.coefficient is null

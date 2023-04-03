@@ -224,9 +224,9 @@ All formats have their own format options, which can be passed into the `format_
 - **coefficient_column_name** (default = `'coefficient'`): Column name storing model coefficients.
 - **strip_quotes** (default = `True`): If true, strip outer quotes from column names if provided; if false, always use string literals.
 
-These options are only available when `method='chol'`:
+These options are available for `format='long'` only when `method='chol'`:
 
-- **calculate_standard_error** (default = `'calculate_standard_error'`): If true, provide the standard error in the output.
+- **calculate_standard_error** (default = `True if not alpha else False`): If true, provide the standard error in the output.
 - **standard_error_column_name** (default = `'standard_error'`): Column name storing the standard error for the parameter.
 -- **t_statistic_column_name** (default = `'t_statistic'`): Column name storing the t-statistic for the parameter.
 

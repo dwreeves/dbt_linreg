@@ -248,13 +248,14 @@ def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed
             ).fit_regularized(L1_wt=0, alpha=alpha_arr)
         else:
             model = sm.OLS(y, x_mat).fit()
+        res_df = pd.DataFrame(index=x_mat.columns)
+        res_df["coef"] = model.params
+        res_df["stderr"] = model.bse
+        res_df["tstat"] = res_df["coef"] / res_df["stderr"]
         click.echo(
             tabulate(
-                pd.DataFrame(
-                    {"coefficient": model.params},
-                    index=x_mat.columns
-                ),
-                headers=["coefficient", "value"],
+                res_df,
+                headers=["column name", "coef", "stderr", "tstat"],
                 disable_numparse=True,
                 tablefmt="psql",
             )
