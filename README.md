@@ -197,7 +197,7 @@ Where:
 
 - **table**: Name of table or CTE to pull the data from. You can use `ref()` or `source()` here if you'd like.
 - **endog**: The endogenous variable / y variable / target variable of the regression. (You can also specify `y=...` instead of `endog=...` if you prefer.)
-- **exog**: The endogenous variable / y variable / target variable of the regression. (You can also specify `x=...` instead of `exog=...` if you prefer.)
+- **exog**: The exogenous variables / X variables / features of the regression. (You can also specify `x=...` instead of `exog=...` if you prefer.)
 - **add_constant**: If true, a constant term is added automatically to the regression.
 - **format**: Either "wide" or "long" format for coefficients. See **Formats and format options** for more.
   - If `wide`, the variables span the columns with their original variable names, and the coefficients fill a single row.
