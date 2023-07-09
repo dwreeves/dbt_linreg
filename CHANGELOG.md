@@ -1,5 +1,9 @@
 # Changelog
 
+### `0.2.1`
+
+- Added `.dbtignore`
+
 ### `0.2.0`
 
 - Add `chol` method to `dbt_linreg.ols()`, and also set as the default method. (This method is significantly faster than `fwl`, and has a few other benefits.)
