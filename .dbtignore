@@ -1,0 +1,4 @@
+*
+!macros/
+!dbt_project.yml
+!README.md
