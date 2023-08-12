@@ -31,7 +31,6 @@ jobs:
         chmod +x ./run
         ./run setup
         pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-duckdb"
-        pip install -U "dbt-duckdb"
       env:
         DBT_CORE_VERSION: ${{ matrix.dbt_core }}
     - name: Lint
