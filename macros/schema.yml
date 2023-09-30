@@ -1,0 +1,101 @@
+version: 2
+
+macros:
+  - name: ols
+    description: |-
+      **dbt_linreg** is an easy way to perform linear regression and ridge regression in SQL with OLS.
+
+      The `dbt_linreg.ols()` macro is the core, high-level API for the **dbt_linreg** package. This macro will calculate and output the coefficients of a linear regression specified by the user. The regression can also be L2 regularized using the `alpha` argument, i.e. ridge regression is also supported.
+
+      Here is an example of a dbt model that selects from a dbt model called `simple_matrix`, and runs a regression on `y` using feature columns `xa`, `xb`, and `xc`:
+
+      {% raw %}
+      ```sql
+      {{
+        config(
+          materialized="table"
+        )
+      }}
+      select * from {{
+        dbt_linreg.ols(
+          table=ref('simple_matrix'),
+          endog='y',
+          exog=['xa', 'xb', 'xc'],
+          format='long',
+          format_options={'round': 5}
+        )
+      }}
+      ```
+      {% endraw %}
+
+      Please see the README / full documentation for more information: [https://dwreeves.github.io/dbt_linreg/](https://dwreeves.github.io/dbt_linreg/)
+    arguments:
+      - name: table
+        type: string
+        description: Name of table or CTE to pull the data from. You can use `ref()` or `source()` here if you'd like.
+      - name: endog
+        type: string
+        description: The endogenous variable / y variable / target variable of the regression. (You can also specify `y=...` instead of `endog=...` if you prefer.)
+      - name: exog
+        type: string or list of strings
+        description: The exogenous variables / X variables / features of the regression. (You can also specify `x=...` instead of `exog=...` if you prefer.)
+      - name: add_constant
+        type: boolean
+        description: 'If true, a constant term is added automatically to the regression. (Default: `true`)'
+      - name: format
+        type: string
+        description: |-
+          Either "wide" or "long" format for coefficients. See **Formats and format options** in the README for more.
+          - If `wide`, the variables span the columns with their original variable names, and the coefficients fill a single row.
+          - If `long`, the coefficients are in a single column called `coefficient`, and the variable names are in a single column called `variable_name`.
+      - name: format_options
+        type: dict
+        description: See **Formats and format options** section in the README for more.
+      - name: alpha
+        type: number or list of numbers
+        description: If not null, the regression will be run as a ridge regression with a penalty of `alpha`. See **Notes** section in the README for more information.
+      - name: method
+        type: string
+        description: The method used to calculate the regression. Only `chol` and `fwl` are valid inputs for now. See **Methods and method options** in the README for more.
+      - name: method_options
+        type: dict
+        description: Options specific to the estimation method. See **Methods and method options** in the README for more.
+  # Everything down here is just for intermediary calculations.
+  # Better to hide this stuff to reduce confusion when reading docs.
+  # The truly curious can just look at the source code.
+  - name: _alias_exog
+    docs:
+      show: false
+  - name: _alias_gb_cols
+    docs:
+      show: false
+  - name: _format_wide_variable_column
+    docs:
+      show: false
+  - name: _gb_cols
+    docs:
+      show: false
+  - name: _join_on_groups
+    docs:
+      show: false
+  - name: _maybe_round
+    docs:
+      show: false
+  - name: _strip_quotes
+    docs:
+      show: false
+  - name: _unalias_gb_cols
+    docs:
+      show: false
+  - name: default__regress
+    docs:
+      show: false
+  - name: final_select
+    docs:
+      show: false
+  - name: regress
+    docs:
+      show: false
+  - name: snowflake__regress
+    docs:
+      show: false

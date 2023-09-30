@@ -58,7 +58,7 @@ The following example runs a linear regression of 3 columns `xa + xb + xc` on `y
 }}
 select * from {{
   dbt_linreg.ols(
-    table=ref('simple_matrix')
+    table=ref('simple_matrix'),
     endog='y',
     exog=['xa', 'xb', 'xc'],
     format='long',
