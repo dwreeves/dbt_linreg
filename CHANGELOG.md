@@ -1,8 +1,12 @@
 # Changelog
 
+### `0.2.2`
+
+- Added dbt documentation of the `ols()` macro.
+
 ### `0.2.1`
 
-- Added `.dbtignore`
+- Added `.dbtignore`.
 
 ### `0.2.0`
 
