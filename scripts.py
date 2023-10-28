@@ -1,3 +1,7 @@
+"""
+This file is used for generation of CSV files for integration test cases,
+and also for manual verification + generation of test case values.
+"""
 import os.path as op
 import warnings
 from typing import NamedTuple
@@ -192,7 +196,10 @@ def cli():
 
 
 @cli.command("regress")
-@click.argument("table")
+@click.option("--table", "-t",
+              required=True,
+              type=click.Choice(ALL_TEST_CASES.keys()),
+              help="Table to regress against.")
 @click.option("--const/--no-const",
               default=True,
               type=click.BOOL,
@@ -211,6 +218,13 @@ def cli():
 @click_option_size()
 @click_option_seed()
 def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed: int):
+    """
+    Run regression on integration test cases.
+
+    Use me for either manual verification of test cases, or for generating new
+    test cases. (All numeric values for test cases were generated using this
+    CLI.)
+    """
     callback = ALL_TEST_CASES[table]
 
     click.echo(click.style("=" * 80, fg="blue"))
@@ -287,10 +301,18 @@ def echo_table_name(s: str):
               help="Generate a specific table. If None, generate all tables.")
 @click_option_size()
 @click_option_seed()
-def gen_test_cases(tables: list[str], size: int, seed: int):
+@click.option("--skip-if-exists", is_flag=True,
+              help="Skip if the file exists. Otherwise, overwrite.")
+def gen_test_cases(tables: list[str], size: int, seed: int, skip_if_exists: bool):
+    """Generate integration test cases (CSV files)."""
     if not tables:
         tables = ALL_TEST_CASES
     for table_name in tables:
+        file_name = f"{DIR}/integration_tests/seeds/{table_name}.csv"
+        if skip_if_exists and op.exists(file_name):
+            click.echo("File " + click.style(file_name, fg="blue") + " already exists; skipping.")
+            continue
+
         callback = ALL_TEST_CASES[table_name]
 
         echo_table_name(table_name)
@@ -330,7 +352,6 @@ def gen_test_cases(tables: list[str], size: int, seed: int):
             )
         )
 
-        file_name = f"{DIR}/integration_tests/seeds/{table_name}.csv"
 
         all_cols = [test_case.y_col, *test_case.x_cols]
         if test_case.group:
