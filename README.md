@@ -30,7 +30,7 @@ Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.2"
+    version: "0.2.3"
 ```
 
 The full file will look something like this:
@@ -41,7 +41,7 @@ packages:
   # Other packages here
   # ...
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.2"
+    version: "0.2.3"
 ```
 
 # Examples
@@ -64,7 +64,7 @@ select * from {{
     format='long',
     format_options={'round': 5}
   )
-}}
+}} as linreg
 ```
 
 Output:
@@ -168,6 +168,7 @@ group by
 **dbt_linreg** should work with most SQL databases, but so far, testing has been done for the following database tools:
 
 - Snowflake
+- Postgres
 - DuckDB
 
 If `dbt_linreg` does not work in your database tool, please let me know in a bug report and I can make sure it is supported.

@@ -11,4 +11,4 @@ select * from {{
     format='wide',
     format_options={'round': 5}
   )
-}}
+}} as linreg

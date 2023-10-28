@@ -18,7 +18,7 @@ select
         'strip_quotes': True
       }
     )
-  }}
+  }} as linreg1
 
 union all
 
@@ -37,4 +37,4 @@ select
         'strip_quotes': False
       }
     )
-  }}
+  }} as linreg2

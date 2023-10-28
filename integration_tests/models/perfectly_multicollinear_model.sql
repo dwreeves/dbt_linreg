@@ -17,4 +17,4 @@ select * from {{
     endog='y',
     exog=['xa', 'xb']
   )
-}}
+}} as linreg

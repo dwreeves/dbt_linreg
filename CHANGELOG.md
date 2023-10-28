@@ -1,5 +1,9 @@
 # Changelog
 
+### `0.2.3`
+
+- Added Postgres support in integration tests + fixed bugs that prevented Postgres from working.
+
 ### `0.2.2`
 
 - Added dbt documentation of the `ols()` macro.

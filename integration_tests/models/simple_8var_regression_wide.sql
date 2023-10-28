@@ -12,4 +12,4 @@ select * from {{
     exog=['xa', 'xb', 'xc', 'xd', 'xe', 'xf', 'xg', 'xh'],
     format='wide',
   )
-}}
+}} as linreg

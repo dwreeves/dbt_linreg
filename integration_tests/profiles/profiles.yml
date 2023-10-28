@@ -1,9 +1,16 @@
 dbt_linreg_profile:
-  target: dev
+  target: dbt-duckdb
   outputs:
-   dev:
-     type: duckdb
-     path: dbt.duckdb
-   dev-memory:
-     type: duckdb
-     path: ":memory:"
+    dbt-duckdb:
+      type: duckdb
+      path: dbt.duckdb
+    dbt-postgres:
+      # This is configured for Github Actions.
+      # For local configuration, set env vars.
+      type: postgres
+      user: '{{ env_var("POSTGRES_USER", "postgres") }}'
+      password: '{{ env_var("POSTGRES_PASSWORD", "postgres") }}'
+      host: '{{ env_var("POSTGRES_HOST", "postgres") }}'
+      port: '{{ env_var("POSTGRES_PORT", "5432") | as_number }}'
+      dbname: '{{ env_var("POSTGRES_DB", "postgres") }}'
+      schema: '{{ env_var("POSTGRES_SCHEMA", "public") }}'

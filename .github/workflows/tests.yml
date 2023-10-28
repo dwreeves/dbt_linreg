@@ -7,33 +7,47 @@ on:
     branches:
     - main
 jobs:
-  test:
+  test-duckdb:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     strategy:
       matrix:
-        dbt_core: [1.3.*, 1.4.*, 1.5.*, 1.6.*]
+        dbt_core: [1.4.*, 1.6.*]
+        db_target: [dbt-duckdb, dbt-postgres]
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-      with:
-        python-version: "3.10"
-        architecture: x64
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      with:
-        version: 1.4.0
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install
-        chmod +x ./run
-        ./run setup
-        pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-duckdb"
-      env:
-        DBT_CORE_VERSION: ${{ matrix.dbt_core }}
-    - name: Lint
-      run: ./run lint
-    - name: Test
-      run: ./run test
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.10"
+          architecture: x64
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.4.0
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install
+          chmod +x ./run
+          ./run setup
+          pip install -U "dbt-core==$DBT_CORE_VERSION" "${DBT_PROVIDER_PACKAGE}"
+        env:
+          DBT_CORE_VERSION: ${{ matrix.dbt_core }}
+          DBT_PROVIDER_PACKAGE: ${{ matrix.db_target }}
+      - name: Lint
+        run: ./run lint
+      - name: Test
+        run: ./run test "${DBT_TARGET}"
+        env:
+          DBT_TARGET: ${{ matrix.db_target }}

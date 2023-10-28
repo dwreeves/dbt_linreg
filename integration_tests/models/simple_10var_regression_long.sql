@@ -12,4 +12,4 @@ select * from {{
     format='long',
     format_options={'round': 5}
   )
-}}
+}} as linreg

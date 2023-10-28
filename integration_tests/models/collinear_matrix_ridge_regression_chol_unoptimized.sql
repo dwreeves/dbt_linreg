@@ -13,4 +13,4 @@ select * from {{
     method='chol',
     method_options={'subquery_optimization': False}
   )
-}}
+}} as linreg

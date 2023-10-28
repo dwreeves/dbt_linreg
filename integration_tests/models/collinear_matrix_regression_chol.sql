@@ -11,4 +11,4 @@ select * from {{
     format='long',
     method='chol'
   )
-}}
+}} as linreg

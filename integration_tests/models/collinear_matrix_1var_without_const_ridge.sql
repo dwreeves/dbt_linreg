@@ -12,4 +12,4 @@ select * from {{
     format='long',
     add_constant=False
   )
-}}
+}} as linreg

@@ -80,7 +80,7 @@
    Doing this keeps the compiled SQL cleaner, and for large regressions can
    slightly improve the query planner speed (albeit not the execution). #}
 {% macro default___regress_or_alias(y, x, add_constant=True) %}
-  {{ return(regress(y, x, add_constant=add_constant)) }}
+  {{ return(dbt_linreg.regress(y, x, add_constant=add_constant)) }}
 {% endmacro %}
 
 {% macro snowflake___regress_or_alias(y, x, add_constant=True) %}
