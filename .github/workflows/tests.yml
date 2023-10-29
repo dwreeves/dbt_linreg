@@ -7,13 +7,20 @@ on:
     branches:
     - main
 jobs:
-  test-duckdb:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+    - uses: pre-commit/action@v3.0.0
+  integration-tests:
     runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -24,11 +31,10 @@ jobs:
         dbt_core: [1.4.*, 1.6.*]
         db_target: [dbt-duckdb, dbt-postgres]
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-          architecture: x64
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -45,9 +51,9 @@ jobs:
         env:
           DBT_CORE_VERSION: ${{ matrix.dbt_core }}
           DBT_PROVIDER_PACKAGE: ${{ matrix.db_target }}
-      - name: Lint
-        run: ./run lint
       - name: Test
         run: ./run test "${DBT_TARGET}"
         env:
           DBT_TARGET: ${{ matrix.db_target }}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
