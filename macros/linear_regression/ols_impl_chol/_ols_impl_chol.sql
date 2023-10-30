@@ -1,6 +1,7 @@
 {# In some warehouses, you can reference newly created column aliases
    in the query you wrote.
    If that's not available, the previous calc will be in the dict. #}
+
 {% macro _cell_or_alias(i, j, d, prefix=none) %}
   {{ return(
     adapter.dispatch('_cell_or_alias', 'dbt_linreg')
@@ -60,7 +61,11 @@
         {% if i == j %}
           {% do d.update({(i, j): dbt_linreg._safe_sqrt(x=ns.s, safe=safe)}) %}
         {% else %}
-          {% do d.update({(i, j): '('~ns.s~')/'~dbt_linreg._cell_or_alias(i=j, j=j, d=d)}) %}
+          {% if adapter.type() == "postgres" %}
+            {% do d.update({(i, j): '('~ns.s~')/nullif('~dbt_linreg._cell_or_alias(i=j, j=j, d=d) ~ ', 0)'}) %}
+          {% else %}
+            {% do d.update({(i, j): '('~ns.s~')/'~dbt_linreg._cell_or_alias(i=j, j=j, d=d)}) %}
+          {% endif %}
         {% endif %}
       {% endif %}
     {% endfor %}
@@ -81,7 +86,11 @@
       {% endfor %}
       {% set ns.numerator = ns.numerator~')' %}
     {% endif %}
-    {% do d.update({(i, j): '('~ns.numerator~'/i'~j~'j'~j~')'}) %}
+    {% if adapter.type() == "postgres" %}
+      {% do d.update({(i, j): '('~ns.numerator~'/nullif(i'~j~'j'~j~', 0))'}) %}
+    {% else %}
+      {% do d.update({(i, j): '('~ns.numerator~'/i'~j~'j'~j~')'}) %}
+    {% endif %}
   {% endfor %}
   {{ return(d) }}
 {% endmacro %}

@@ -5,12 +5,10 @@ dbt_linreg_profile:
       type: duckdb
       path: dbt.duckdb
     dbt-postgres:
-      # This is configured for Github Actions.
-      # For local configuration, set env vars.
       type: postgres
-      user: '{{ env_var("POSTGRES_USER", "postgres") }}'
-      password: '{{ env_var("POSTGRES_PASSWORD", "postgres") }}'
+      user: '{{ env_var("POSTGRES_USER") }}'
+      password: '{{ env_var("POSTGRES_PASSWORD") }}'
       host: '{{ env_var("POSTGRES_HOST", "localhost") }}'
       port: '{{ env_var("POSTGRES_PORT", "5432") | as_number }}'
-      dbname: '{{ env_var("POSTGRES_DB", "postgres") }}'
+      dbname: '{{ env_var("POSTGRES_DB", "dbt_linreg") }}'
       schema: '{{ env_var("POSTGRES_SCHEMA", "public") }}'

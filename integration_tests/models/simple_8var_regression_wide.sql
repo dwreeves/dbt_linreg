@@ -1,8 +1,8 @@
 {{
   config(
     materialized="view",
-    tags=["perftest"],
-    enabled=False
+    tags=["perftest", "skip-postgres"],
+    enabled=False,
   )
 }}
 select * from {{

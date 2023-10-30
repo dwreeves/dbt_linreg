@@ -19,8 +19,11 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_DB: dbt_linreg
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -55,5 +58,7 @@ jobs:
         run: ./run test "${DBT_TARGET}"
         env:
           DBT_TARGET: ${{ matrix.db_target }}
+          POSTGRES_HOST: localhost
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dbt_linreg
