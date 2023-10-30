@@ -1,6 +1,7 @@
 {{
   config(
-    materialized="table"
+    materialized="table",
+    tags=["skip-postgres"]
   )
 }}
 select * from {{
@@ -11,4 +12,4 @@ select * from {{
     format='wide',
     format_options={'round': 5}
   )
-}}
+}} as linreg

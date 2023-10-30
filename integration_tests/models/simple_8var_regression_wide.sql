@@ -1,8 +1,8 @@
 {{
   config(
     materialized="view",
-    tags=["perftest"],
-    enabled=False
+    tags=["perftest", "skip-postgres"],
+    enabled=False,
   )
 }}
 select * from {{
@@ -12,4 +12,4 @@ select * from {{
     exog=['xa', 'xb', 'xc', 'xd', 'xe', 'xf', 'xg', 'xh'],
     format='wide',
   )
-}}
+}} as linreg

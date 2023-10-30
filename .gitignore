@@ -1,4 +1,5 @@
 dbt.duckdb
+dbt.duckdb.wal
 .user.yml
 docs/site/
 integration_tests/seeds/*.csv

@@ -1,6 +1,7 @@
 {{
   config(
-    materialized="table"
+    materialized="table",
+    tags=["skip-postgres"]
   )
 }}
 select * from {{
@@ -13,5 +14,5 @@ select * from {{
     method='chol',
     method_options={'subquery_optimization': False}
   )
-}}
+}} as linreg
 order by gb_var, variable_name

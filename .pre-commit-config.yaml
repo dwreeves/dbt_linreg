@@ -17,3 +17,8 @@ repos:
   hooks:
     - id: shellcheck
       args: [-x, run]
+
+- repo: https://github.com/rhysd/actionlint
+  rev: v1.6.26
+  hooks:
+    - id: actionlint

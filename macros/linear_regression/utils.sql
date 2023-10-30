@@ -43,7 +43,7 @@
 {%- if add_constant %}
 select
   {{ dbt_linreg._unalias_gb_cols(group_by, prefix='b') | indent(2) }}
-  '{{ format_options.get('constant_name', 'const') }}' as {{ format_options.get('variable_column_name', 'variable_name') }},
+  {{ dbt.string_literal(format_options.get('constant_name', 'const')) }} as {{ format_options.get('variable_column_name', 'variable_name') }},
   {{ dbt_linreg._maybe_round('x0_coef', format_options.get('round')) }} as {{ format_options.get('coefficient_column_name', 'coefficient') }}{% if calculate_standard_error %},
   {{ dbt_linreg._maybe_round('x0_stderr', format_options.get('round')) }} as {{ format_options.get('standard_error_column_name', 'standard_error') }},
   {{ dbt_linreg._maybe_round('x0_coef/x0_stderr', format_options.get('round')) }} as {{ format_options.get('t_statistic_column_name', 't_statistic') }}
@@ -59,7 +59,7 @@ union all
 {%- for i in exog_aliased %}
 select
   {{ dbt_linreg._unalias_gb_cols(group_by, prefix='b') | indent(2) }}
-  '{{ dbt_linreg._strip_quotes(exog[loop.index0], format_options) }}' as {{ format_options.get('variable_column_name', 'variable_name') }},
+  {{ dbt.string_literal(dbt_linreg._strip_quotes(exog[loop.index0], format_options)) }} as {{ format_options.get('variable_column_name', 'variable_name') }},
   {{ dbt_linreg._maybe_round(i~'_coef', format_options.get('round')) }} as {{ format_options.get('coefficient_column_name', 'coefficient') }}{% if calculate_standard_error %},
   {{ dbt_linreg._maybe_round(i~'_stderr', format_options.get('round')) }} as {{ format_options.get('standard_error_column_name', 'standard_error') }},
   {{ dbt_linreg._maybe_round(i~'_coef/'~i~'_stderr', format_options.get('round')) }} as {{ format_options.get('t_statistic_column_name', 't_statistic') }}
@@ -154,12 +154,27 @@ gb{{ loop.index }} as {{ gb }},
 
 {# Round the final coefficient if the user specifies the `round` format
    option. Otherwise, keep as is. #}
+
 {% macro _maybe_round(x, round_) %}
-{% if round_ is not none %}
-  {{ return('round(' ~ x ~ ', ' ~ round_ ~ ')') }}
-{% else %}
-  {{ return(x) }}
-{% endif %}
+  {{ return(
+    adapter.dispatch('_maybe_round', 'dbt_linreg')(x, round_)
+  ) }}
+{% endmacro %}
+
+{% macro default___maybe_round(x, round_) %}
+  {% if round_ is not none %}
+    {{ return('round(' ~ x ~ ', ' ~ round_ ~ ')') }}
+  {% else %}
+    {{ return(x) }}
+  {% endif %}
+{% endmacro %}
+
+{% macro postgres___maybe_round(x, round_) %}
+  {% if round_ is not none %}
+    {{ return('round((' ~ x ~ ')::numeric, ' ~ round_ ~ ')') }}
+  {% else %}
+    {{ return('(' ~ x ~ ')::numeric') }}
+  {% endif %}
 {% endmacro %}
 
 {# Alias and write group by columns in a standard way. #}
