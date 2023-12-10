@@ -89,6 +89,7 @@
 {% macro _ols_chol(table,
                    endog,
                    exog,
+                   weights=None,
                    add_constant=True,
                    format=None,
                    format_options=None,
