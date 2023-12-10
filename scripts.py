@@ -190,7 +190,7 @@ def click_option_size(**kwargs):
     )
 
 
-@click.group("main")
+@click.group("main", context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
     """CLI for manually testing the code base."""
 
@@ -215,9 +215,14 @@ def cli():
               type=click.FLOAT,
               show_default=True,
               help="Alpha for the regression.")
+@click.option("--weights", "-w",
+              default=None,
+              type=click.STRING,
+              show_default=True,
+              help="Weight column for regression.")
 @click_option_size()
 @click_option_seed()
-def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed: int):
+def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed: int, weights: str):
     """
     Run regression on integration test cases.
 
@@ -251,21 +256,26 @@ def regress(table: str, const: bool, columns: int, alpha: float, size: int, seed
             cond = slice(None)
         y = test_case.df.loc[cond, test_case.y_col]
         x_mat = test_case.df.loc[cond, x_cols]
+        kw = {}
+        if weights:
+            kw["weights"] = np.abs(test_case.df[weights])
         if alpha:
             if const:
                 alpha_arr = [0, *([alpha] * (len(x_mat.columns) - 1))]
             else:
                 alpha_arr = [alpha] * len(x_mat.columns)
-            model = sm.OLS(
+            model = sm.WLS(
                 y,
-                x_mat
-            ).fit_regularized(L1_wt=0, alpha=alpha_arr)
+                x_mat,
+                **kw,
+            ).fit_regularized(L1_wt=0.00000001, alpha=alpha_arr)
         else:
-            model = sm.OLS(y, x_mat).fit()
+            model = sm.WLS(y, x_mat, **kw).fit()
         res_df = pd.DataFrame(index=x_mat.columns)
         res_df["coef"] = model.params
-        res_df["stderr"] = model.bse
-        res_df["tstat"] = res_df["coef"] / res_df["stderr"]
+        if not alpha:
+            res_df["stderr"] = model.bse
+            res_df["tstat"] = res_df["coef"] / res_df["stderr"]
         click.echo(
             tabulate(
                 res_df,
