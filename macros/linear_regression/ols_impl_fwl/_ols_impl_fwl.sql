@@ -95,6 +95,7 @@
 {% macro _ols_fwl(table,
                   endog,
                   exog,
+                  weights=None,
                   add_constant=True,
                   format=None,
                   format_options=None,
