@@ -1,9 +1,14 @@
 dbt_linreg_profile:
-  target: dev
+  target: dbt-duckdb
   outputs:
-   dev:
-     type: duckdb
-     path: dbt.duckdb
-   dev-memory:
-     type: duckdb
-     path: ":memory:"
+    dbt-duckdb:
+      type: duckdb
+      path: dbt.duckdb
+    dbt-postgres:
+      type: postgres
+      user: '{{ env_var("POSTGRES_USER") }}'
+      password: '{{ env_var("POSTGRES_PASSWORD") }}'
+      host: '{{ env_var("POSTGRES_HOST", "localhost") }}'
+      port: '{{ env_var("POSTGRES_PORT", "5432") | as_number }}'
+      dbname: '{{ env_var("POSTGRES_DB", "dbt_linreg") }}'
+      schema: '{{ env_var("POSTGRES_SCHEMA", "public") }}'

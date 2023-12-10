@@ -12,4 +12,4 @@ select * from {{
     alpha=0.01,
     method='fwl'
   )
-}}
+}} as linreg

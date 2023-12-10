@@ -12,5 +12,5 @@ select * from {{
     format='long',
     method='fwl'
   )
-}}
+}} as linreg
 order by gb_var, variable_name

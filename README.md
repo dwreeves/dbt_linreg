@@ -30,7 +30,7 @@ Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.2"
+    version: "0.2.3"
 ```
 
 The full file will look something like this:
@@ -41,7 +41,7 @@ packages:
   # Other packages here
   # ...
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.2"
+    version: "0.2.3"
 ```
 
 # Examples
@@ -64,7 +64,7 @@ select * from {{
     format='long',
     format_options={'round': 5}
   )
-}}
+}} as linreg
 ```
 
 Output:
@@ -169,8 +169,11 @@ group by
 
 - Snowflake
 - DuckDB
+- Postgres\*
 
 If `dbt_linreg` does not work in your database tool, please let me know in a bug report and I can make sure it is supported.
+
+> _* Minimal support. Postgres is syntactically supported, but is not performant under certain circumstances._
 
 # API
 
@@ -255,7 +258,7 @@ This method calculates regression coefficients using the Moore-Penrose pseudo-in
 Specify these in a dict using the `method_options=` kwarg:
 
 - **safe** (default = `True`): If True, returns null coefficients instead of an error when X is perfectly multicollinear. If False, a negative value will be passed into a SQRT(), and most SQL engines will raise an error when this happens.
-- **subquery_optimization** (default = `True`): If True, nested subqueries are used during some of the steps to optimize the query speed. If false, the query is flattened. Note that turning this off can significantly degrade performance.
+- **subquery_optimization** (default: `True`): If True, nested subqueries are used during some of the steps to optimize the query speed. If false, the query is flattened.
 
 ## `fwl` method
 
@@ -269,9 +272,11 @@ Ridge regression is implemented using the augmentation technique described in Ex
 
 There are a few reasons why this method is discouraged over the `chol` method:
 
-- 🐌 It tends to be much slower, and struggles to efficiently calculate large number of columns.
+- 🐌 It tends to be much slower in OLAP systems, and struggles to efficiently calculate large number of columns.
 - 📊 It does not calculate standard errors.
 - 😕 For ridge regression, coefficients are not accurate; they tend to be off by a magnitude of ~0.01%.
+
+So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgres) for unregularized coefficient estimation. Long story short, the `chol` method relies on subquery optimization to be more performant than `fwl`; however, OLTP systems do not benefit at all from subquery optimization. This means that `fwl` is slightly more performant in this context.
 
 # Notes
 
@@ -281,6 +286,11 @@ There are a few reasons why this method is discouraged over the `chol` method:
   - A scalar input (e.g. `alpha=0.01`) will apply an alpha of `0.01` to all features.
   - An array input (e.g. `alpha=[0.01, 0.02, 0.03, 0.04, 0.05]`) will apply an alpha of `0.01` to the first column, `0.02` to the second column, etc.
   - `alpha` is equivalent to what TEoSL refers to as "lambda," times the sample size N. That is to say: `α ≡ λ * N`.
+
+- Regularization as currently implemented for the `chol` method tends to be very slow in OLTP systems (e.g. Postgres), but is very performant in OLAP systems (e.g. Snowflake, DuckDB, BigQuery, Redshift). As dbt is more commonly used in OLAP contexts, the code base is optimized for the OLAP use case.
+  - That said, it may be possible to make regularization in OLTP more performant (e.g. with augmentation of the design matrix), so PRs are welcome.
+
+- Regression coefficients in Postgres are always `numeric` types.
 
 ### Possible future features
 

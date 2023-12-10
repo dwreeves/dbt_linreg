@@ -1,23 +1,24 @@
 {# In some warehouses, you can reference newly created column aliases
    in the query you wrote.
    If that's not available, the previous calc will be in the dict. #}
-{% macro _cell_or_alias(i, j, d) %}
+
+{% macro _cell_or_alias(i, j, d, prefix=none) %}
   {{ return(
     adapter.dispatch('_cell_or_alias', 'dbt_linreg')
-    (i, j, d)
+    (i, j, d, prefix)
   ) }}
 {% endmacro %}
 
-{% macro default___cell_or_alias(i, j, d) %}
+{% macro default___cell_or_alias(i, j, d, prefix=none) %}
   {{ return(d[(i, j)]) }}
 {% endmacro %}
 
-{% macro snowflake___cell_or_alias(i, j, d) %}
-  {{ return('i' ~ i ~ 'j' ~ j) }}
+{% macro snowflake___cell_or_alias(i, j, d, prefix=none) %}
+  {{ return((prefix if prefix is not none else '') ~ 'i' ~ i ~ 'j' ~ j) }}
 {% endmacro %}
 
-{% macro duckdb___cell_or_alias(i, j, d) %}
-  {{ return('i' ~ i ~ 'j' ~ j) }}
+{% macro duckdb___cell_or_alias(i, j, d, prefix=none) %}
+  {{ return((prefix if prefix is not none else '') ~ 'i' ~ i ~ 'j' ~ j) }}
 {% endmacro %}
 
 {% macro _safe_sqrt(x, safe=True) %}
@@ -60,7 +61,11 @@
         {% if i == j %}
           {% do d.update({(i, j): dbt_linreg._safe_sqrt(x=ns.s, safe=safe)}) %}
         {% else %}
-          {% do d.update({(i, j): '('~ns.s~')/'~dbt_linreg._cell_or_alias(i=j, j=j, d=d)}) %}
+          {% if adapter.type() == "postgres" %}
+            {% do d.update({(i, j): '('~ns.s~')/nullif('~dbt_linreg._cell_or_alias(i=j, j=j, d=d) ~ ', 0)'}) %}
+          {% else %}
+            {% do d.update({(i, j): '('~ns.s~')/'~dbt_linreg._cell_or_alias(i=j, j=j, d=d)}) %}
+          {% endif %}
         {% endif %}
       {% endif %}
     {% endfor %}
@@ -77,11 +82,15 @@
     {% else %}
       {% set ns.numerator = '(' %}
       {% for k in range(i, j) %}
-        {% set ns.numerator = ns.numerator~'-i'~j~'j'~k~'*inv_'~dbt_linreg._cell_or_alias(i=i, j=k, d=d) %}
+        {% set ns.numerator = ns.numerator~'-i'~j~'j'~k~'*'~dbt_linreg._cell_or_alias(i=i, j=k, d=d, prefix="inv_") %}
       {% endfor %}
       {% set ns.numerator = ns.numerator~')' %}
     {% endif %}
-    {% do d.update({(i, j): '('~ns.numerator~'/i'~j~'j'~j~')'}) %}
+    {% if adapter.type() == "postgres" %}
+      {% do d.update({(i, j): '('~ns.numerator~'/nullif(i'~j~'j'~j~', 0))'}) %}
+    {% else %}
+      {% do d.update({(i, j): '('~ns.numerator~'/i'~j~'j'~j~')'}) %}
+    {% endif %}
   {% endfor %}
   {{ return(d) }}
 {% endmacro %}
@@ -123,6 +132,7 @@
   {% set xmin = 1 %}
 {%- endif %}
 {%- set xcols = (range(xmin, (exog | length) + 1) | list) %}
+{%- set upto = (xcols | length) %}
 {%- set exog_aliased = dbt_linreg._alias_exog(exog) %}
 (with
 _dbt_linreg_base as (
@@ -176,7 +186,7 @@ _dbt_linreg_chol as (
   {%- if not loop.last %}
   from (
   {%- else %}
-  from _dbt_linreg_xtx{{ ')' * ((xcols | length) - 1) }}
+  from _dbt_linreg_xtx{% for close_ct in range(upto - 1) %}) as ic{{ close_ct }}{% endfor %}
   {%- endif %}
   {%- endfor %}
   {%- else %}
@@ -195,7 +205,6 @@ _dbt_linreg_inverse_chol as (
   {#- The optimal way to calculate is to do each diagonal at a time. #}
   {%- set d = dbt_linreg._forward_substitution(li=xcols) %}
   {%- if subquery_optimization %}
-  {%- set upto = (xcols | length) %}
   {%- for gap in (range(0, upto) | reverse) %}
   select *,
     {%- for j in range(gap + xmin, upto + xmin) %}
@@ -208,7 +217,7 @@ _dbt_linreg_inverse_chol as (
   {%- if not loop.last %}
   from (
   {%- else %}
-  from _dbt_linreg_chol{{ ')' * (upto - 1) }}
+  from _dbt_linreg_chol{% for close_ct in range(upto - 1) %}) as ic{{ close_ct }}{% endfor %}
   {%- endif %}
   {%- endfor %}
   {%- else %}
@@ -227,7 +236,6 @@ _dbt_linreg_inverse_xtx as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     {%- for i, j in modules.itertools.combinations_with_replacement(xcols, 2) %}
-    {%- set upto = (xcols | length) %}
     {%- if not add_constant %}
       {%- set upto = upto + 1 %}
     {%- endif %}
@@ -288,7 +296,7 @@ _dbt_linreg_stderrs as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
     {%- for x in xcols %}
-    sqrt(inv_x{{ x }}x{{ x }} * resid_square_mean * n / (n - {{ xcols | length }})) as x{{ x }}_stderr
+    sqrt(inv_x{{ x }}x{{ x }} * resid_square_mean * n / (n - {{ upto }})) as x{{ x }}_stderr
     {%- if not loop.last -%}
     ,
     {%- endif %}

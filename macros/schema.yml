@@ -28,6 +28,8 @@ macros:
       ```
       {% endraw %}
 
+      The macro renders a subquery; in some database engines, such as Postgres, it is required to alias all subqueries.
+
       Please see the README / full documentation for more information: [https://dwreeves.github.io/dbt_linreg/](https://dwreeves.github.io/dbt_linreg/)
     arguments:
       - name: table

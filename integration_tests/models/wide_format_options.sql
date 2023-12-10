@@ -17,4 +17,4 @@ select
         'constant_name': 'constant_term'
       }
     )
-  }}
+  }} as linreg

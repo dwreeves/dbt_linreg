@@ -10,8 +10,8 @@ base as (
 find_unstripped_quotes as (
 
   select
-    max(vname = '"xa"') as should_be_true,
-    max(vname = 'xa') as should_be_false
+    cast(max(cast(vname = '"xa"' as integer)) as boolean) as should_be_true,
+    cast(max(cast(vname = 'xa' as integer)) as boolean) as should_be_false
   from base
   where not strip_quotes
 
@@ -20,8 +20,8 @@ find_unstripped_quotes as (
 dodge_unstripped_quotes as (
 
   select
-    max(vname = 'xa') as should_be_true,
-    max(vname = '"xa"') as should_be_false
+    cast(max(cast(vname = 'xa' as integer)) as boolean) as should_be_true,
+    cast(max(cast(vname = '"xa"' as integer)) as boolean) as should_be_false
   from base
   where strip_quotes
 
@@ -30,8 +30,8 @@ dodge_unstripped_quotes as (
 coef_col_name as (
 
   select
-    max(vname = 'constant_term') as should_be_true,
-    max(vname = 'const') as should_be_false
+    cast(max(cast(vname = 'constant_term' as integer)) as boolean) as should_be_true,
+    cast(max(cast(vname = 'const' as integer)) as boolean) as should_be_false
   from base
 
 )
