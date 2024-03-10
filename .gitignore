@@ -4,6 +4,7 @@ dbt.duckdb.wal
 .user.yml
 docs/site/
 integration_tests/seeds/*.csv
+integration_tests/package-lock.yml
 
 # Created by https://www.toptal.com/developers/gitignore/api/dbt,osx,windows,visualstudiocode,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=dbt,osx,windows,visualstudiocode,python
