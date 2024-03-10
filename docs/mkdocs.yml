@@ -11,7 +11,7 @@ theme:
   name: material
   palette:
     - media: "(prefers-color-scheme: dark)"
-      scheme: default
+      scheme: slate
       primary: black
       accent: light blue
       toggle:
