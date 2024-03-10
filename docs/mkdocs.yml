@@ -7,12 +7,24 @@ repo_name: dbt_linreg
 docs_dir: src
 nav:
 - Home: index.md
+
 theme:
   name: material
   palette:
-    scheme: default
-    primary: white
-    accent: light blue
+    - media: "(prefers-color-scheme: dark)"
+      scheme: default
+      primary: black
+      accent: light-blue
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: light-blue
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
   logo: img/dbt-linreg-logo.png
   favicon: img/dbt-linreg-favicon.png
   font:
@@ -21,15 +33,15 @@ theme:
 plugins:
   - macros
 markdown_extensions:
-- admonition
-- pymdownx.tabbed
-- pymdownx.keys
-- pymdownx.details
-- pymdownx.inlinehilite
-- pymdownx.superfences
-- markdown_include.include:
-    base_path: docs
-- sane_lists
+  - admonition
+  - pymdownx.tabbed
+  - pymdownx.keys
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - markdown_include.include:
+      base_path: docs
+  - sane_lists
 extra:
   social:
     - icon: fontawesome/brands/github

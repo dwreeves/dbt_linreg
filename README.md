@@ -1,6 +1,8 @@
-
 <p align="center">
-    <img src="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner.png" alt="dbt_linreg logo">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-dark.png">
+        <img src="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-light.png" alt="dbt_linreg logo">
+    </picture>
 </p>
 <p align="center">
     <em>Linear regression in any SQL dialect, powered by dbt.</em>
