@@ -31,7 +31,7 @@ jobs:
           --health-retries 5
     strategy:
       matrix:
-        dbt_core: [1.4.*, 1.6.*]
+        dbt_core: [1.4.*, 1.7.*]
         db_target: [dbt-duckdb, dbt-postgres]
     steps:
       - uses: actions/checkout@v4
