@@ -177,6 +177,14 @@ gb{{ loop.index }} as {{ gb }},
   {% endif %}
 {% endmacro %}
 
+{% macro redshift___maybe_round(x, round_) %}
+  {% if round_ is not none %}
+    {{ return('round(' ~ x ~ ', ' ~ round_ ~ ')') }}
+  {% else %}
+    {{ return(x) }}
+  {% endif %}
+{% endmacro %}
+
 {# Alias and write group by columns in a standard way. #}
 {% macro _gb_cols(group_by, trailing_comma=False, prefix=None) -%}
 {%- if group_by %}
