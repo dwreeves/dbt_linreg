@@ -277,6 +277,7 @@ There are a few reasons why this method is discouraged over the `chol` method:
 - 🐌 It tends to be much slower in OLAP systems, and struggles to efficiently calculate large number of columns.
 - 📊 It does not calculate standard errors.
 - 😕 For ridge regression, coefficients are not accurate; they tend to be off by a magnitude of ~0.01%.
+- ⚠️ It does not work in all databases because it relies on `COVAR_POP`.
 
 So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgres) for unregularized coefficient estimation. Long story short, the `chol` method relies on subquery optimization to be more performant than `fwl`; however, OLTP systems do not benefit at all from subquery optimization. This means that `fwl` is slightly more performant in this context.
 

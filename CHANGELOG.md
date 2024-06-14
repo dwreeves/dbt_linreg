@@ -1,5 +1,9 @@
 # Changelog
 
+### `0.2.4`
+
+- Fix minor incompatibility with Redshift; contributed by [@steelcd](https://github.com/steelcd).
+
 ### `0.2.3`
 
 - Added Postgres support in integration tests + fixed bugs that prevented Postgres from working.
