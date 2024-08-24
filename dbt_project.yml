@@ -1,5 +1,5 @@
 name: "dbt_linreg"
-version: "0.2.4"
+version: "0.2.5"
 
 # 1.2 is required because of modules.itertools.
 require-dbt-version: [">=1.2.0", "<2.0.0"]
