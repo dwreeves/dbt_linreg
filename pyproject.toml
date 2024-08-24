@@ -25,11 +25,14 @@ ruff = "*"
 statsmodels = "*"
 tabulate = "*"
 dbt-postgres = "^1.6.6"
+pyyaml = "*"
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
 select = ["F", "E", "W", "I001"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 lines-after-imports = 2
 force-single-line = true
