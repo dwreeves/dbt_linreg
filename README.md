@@ -193,7 +193,8 @@ def ols(
     format_options: Optional[dict[str, Any]] = None,
     group_by: Optional[Union[str, list[str]]] = None,
     alpha: Optional[Union[float, list[float]]] = None,
-    method: Literal['chol', 'fwl'] = 'chol'
+    method: Literal['chol', 'fwl'] = 'chol',
+    method_options: Optional[dict[str, Any]] = None
 ):
     ...
 ```
