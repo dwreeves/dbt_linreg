@@ -20,8 +20,7 @@
     2. Dispatches the appropriate call.
 
     The actual calculations occur elsewhere in the code, depending on the
-    implementation chosen. (At the moment, the only implementation method
-    supported is method='fwl'.)
+    implementation chosen.
 
   #############################################################################}
 
