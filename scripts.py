@@ -2,6 +2,7 @@
 This file is used for generation of CSV files for integration test cases,
 and also for manual verification + generation of test case values.
 """
+import json
 import os.path as op
 import warnings
 from typing import NamedTuple
@@ -12,6 +13,7 @@ import numpy as np
 import pandas as pd
 import rich_click as click
 import statsmodels.api as sm
+import yaml
 from tabulate import tabulate
 
 
@@ -373,6 +375,36 @@ def gen_test_cases(tables: list[str], size: int, seed: int, skip_if_exists: bool
         )
         click.echo("")
     click.echo(click.style("Done!", fg="green"))
+
+
+@cli.command("gen-hide-macros-yaml")
+def gen_hide_args_yaml():
+    """Generates the YAML that hides the macros from the docs.
+
+    Requires the `manifest.json` to be available.
+    (`dbt parse --profiles-dir ./integration_tests/profiles`)
+
+    Recommended to `| pbcopy` this command, then paste in `macros/schema.yml`.
+
+    This is not enforced during CICD, beware!
+    """
+    exclude_from_hiding = ["ols"]
+    with open("target/manifest.json") as f:
+        manifest = json.load(f)
+
+    macros = [
+        data["name"] for fqn, data
+        in manifest["macros"].items()
+        if data.get("package_name", "") == "dbt_linreg"
+        and data.get("name") not in exclude_from_hiding
+    ]
+
+    out = [
+        {"name": macro, "docs": {"show": False}}
+        for macro in sorted(macros)
+    ]
+
+    print("  " + yaml.safe_dump(out, sort_keys=False).replace("\n", "\n  "))
 
 
 if __name__ == "__main__":

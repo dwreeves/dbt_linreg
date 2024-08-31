@@ -73,7 +73,7 @@
   {{ return(d) }}
 {% endmacro %}
 
-{% macro _forward_substitution(li) %}
+{% macro _forward_substitution(li, safe=true) %}
   {% set d = {} %}
   {% for i, j in modules.itertools.combinations_with_replacement(li, 2) %}
     {% set ns = namespace() %}
@@ -86,7 +86,7 @@
       {% endfor %}
       {% set ns.numerator = ns.numerator~')' %}
     {% endif %}
-    {% if adapter.type() == "postgres" %}
+    {% if safe %}
       {% do d.update({(i, j): '('~ns.numerator~'/nullif(i'~j~'j'~j~', 0))'}) %}
     {% else %}
       {% do d.update({(i, j): '('~ns.numerator~'/i'~j~'j'~j~')'}) %}
@@ -119,7 +119,7 @@
   )) }}
 {%- endif %}
 {%- set subquery_optimization = method_options.get('subquery_optimization', True) %}
-{%- set safe_sqrt = method_options.get('safe', True) %}
+{%- set safe_mode = method_options.get('safe', True) %}
 {%- set calculate_standard_error = format_options.get('calculate_standard_error', (not alpha)) and format == 'long' %}
 {%- if alpha and calculate_standard_error %}
   {% do log(
@@ -172,7 +172,7 @@ _dbt_linreg_xtx as (
 ),
 _dbt_linreg_chol as (
 
-  {%- set d = dbt_linreg._cholesky_decomposition(li=xcols, subquery_optimization=subquery_optimization, safe=safe_sqrt) %}
+  {%- set d = dbt_linreg._cholesky_decomposition(li=xcols, subquery_optimization=subquery_optimization, safe=safe_mode) %}
   {%- if subquery_optimization %}
   {%- for i in (xcols | reverse) %}
   select
@@ -203,7 +203,7 @@ _dbt_linreg_chol as (
 ),
 _dbt_linreg_inverse_chol as (
   {#- The optimal way to calculate is to do each diagonal at a time. #}
-  {%- set d = dbt_linreg._forward_substitution(li=xcols) %}
+  {%- set d = dbt_linreg._forward_substitution(li=xcols, safe=safe_mode) %}
   {%- if subquery_optimization %}
   {%- for gap in (range(0, upto) | reverse) %}
   select *,

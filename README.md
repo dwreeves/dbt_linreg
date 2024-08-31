@@ -1,7 +1,7 @@
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-dark.png">
-        <img src="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-light.png" alt="dbt_linreg logo">
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-dark.png#readme-logo">
+        <img src="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-light.png#readme-logo" alt="dbt_linreg logo">
     </picture>
 </p>
 <p align="center">
@@ -32,7 +32,7 @@ Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.3"
+    version: "0.2.5"
 ```
 
 The full file will look something like this:
@@ -43,7 +43,7 @@ packages:
   # Other packages here
   # ...
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.3"
+    version: "0.2.5"
 ```
 
 # Examples
@@ -193,7 +193,8 @@ def ols(
     format_options: Optional[dict[str, Any]] = None,
     group_by: Optional[Union[str, list[str]]] = None,
     alpha: Optional[Union[float, list[float]]] = None,
-    method: Literal['chol', 'fwl'] = 'chol'
+    method: Literal['chol', 'fwl'] = 'chol',
+    method_options: Optional[dict[str, Any]] = None
 ):
     ...
 ```
@@ -277,6 +278,7 @@ There are a few reasons why this method is discouraged over the `chol` method:
 - 🐌 It tends to be much slower in OLAP systems, and struggles to efficiently calculate large number of columns.
 - 📊 It does not calculate standard errors.
 - 😕 For ridge regression, coefficients are not accurate; they tend to be off by a magnitude of ~0.01%.
+- ⚠️ It does not work in all databases because it relies on `COVAR_POP`.
 
 So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgres) for unregularized coefficient estimation. Long story short, the `chol` method relies on subquery optimization to be more performant than `fwl`; however, OLTP systems do not benefit at all from subquery optimization. This means that `fwl` is slightly more performant in this context.
 

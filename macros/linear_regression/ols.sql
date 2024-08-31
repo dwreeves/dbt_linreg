@@ -21,8 +21,7 @@
     2. Dispatches the appropriate call.
 
     The actual calculations occur elsewhere in the code, depending on the
-    implementation chosen. (At the moment, the only implementation method
-    supported is method='fwl'.)
+    implementation chosen.
 
   #############################################################################}
 
@@ -61,6 +60,8 @@
     {% else %}
       {% set exog = [exog] %}
     {% endif %}
+  {% elif exog is string %}
+    {% set exog = [exog] %}
   {% endif %}
 
   {% if group_by is not iterable %}
@@ -69,6 +70,8 @@
     {% else %}
       {% set group_by = [group_by] %}
     {% endif %}
+  {% elif group_by is string %}
+    {% set group_by = [group_by] %}
   {% endif %}
 
   {% if alpha is not iterable and alpha is not none %}

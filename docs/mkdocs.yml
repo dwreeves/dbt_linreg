@@ -12,16 +12,16 @@ theme:
   name: material
   palette:
     - media: "(prefers-color-scheme: dark)"
-      scheme: default
+      scheme: slate
       primary: black
-      accent: light-blue
+      accent: light blue
       toggle:
         icon: material/lightbulb-outline
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: white
-      accent: light-blue
+      accent: light blue
       toggle:
         icon: material/lightbulb
         name: Switch to dark mode
@@ -42,11 +42,11 @@ markdown_extensions:
   - markdown_include.include:
       base_path: docs
   - sane_lists
+extra_css:
+  - css/extra.css
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/dwreeves/dbt_linreg
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/daniel-reeves-27700545/
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/mueblesfeos

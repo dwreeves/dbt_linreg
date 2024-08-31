@@ -26,7 +26,7 @@ _dbt_linreg_cmeans as (
 {%- endif %}
 _dbt_linreg_base as (
   select
-    {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
+    {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
     {%- if alpha and add_constant %}
     b.{{ endog }} - _dbt_linreg_cmeans.y as y,
     b.{{ exog[0] }} - _dbt_linreg_cmeans.x1 as x1,

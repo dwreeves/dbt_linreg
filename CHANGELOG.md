@@ -1,5 +1,16 @@
 # Changelog
 
+### `0.2.5`
+
+- Fix bug where `exog` and `group_by` did not handle `str` inputs e.g. `exog="x"`.
+- Fix bug where `group_by` for `method='fwl'` with exactly 1 exog variable did not work. (Explanation: `method='fwl'` dispatches to a different macro for the special case of 1 exog variable, and `group_by` was not implemented correctly here.)
+- Fix bug where `safe` mode did not work for `method='chol'`.
+- Improved docs by hiding everything except `ols()`, improved description of `ols()` macro, and added missing arg.
+
+### `0.2.4`
+
+- Fix minor incompatibility with Redshift; contributed by [@steelcd](https://github.com/steelcd).
+
 ### `0.2.3`
 
 - Added Postgres support in integration tests + fixed bugs that prevented Postgres from working.
