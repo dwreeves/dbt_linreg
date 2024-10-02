@@ -221,7 +221,7 @@ inner join {{ join_to }}
 on
   {%- for _ in group_by %}
   {{ join_from }}.gb{{ loop.index }} = {{ join_to }}.gb{{ loop.index }}
-  {%- if not loop.last -%}
+  {% if not loop.last -%}
   and
   {%- endif %}
   {%- endfor %}

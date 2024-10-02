@@ -1,5 +1,9 @@
 # Changelog
 
+### `0.2.6`
+
+- Fix bug with `group_by` on multiple variables; contributed by [@svkohler](https://github.com/dwreeves/dbt_linreg/issues/21).
+
 ### `0.2.5`
 
 - Fix bug where `exog` and `group_by` did not handle `str` inputs e.g. `exog="x"`.
