@@ -28,7 +28,7 @@ dbt-postgres = "^1.6.6"
 pyyaml = "*"
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I001"]
