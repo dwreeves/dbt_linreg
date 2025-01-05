@@ -9,7 +9,7 @@ select * from {{
     endog='y',
     exog=['x1', 'x2', 'x3'],
     group_by=['gb_var'],
-    format='long',
+    output='long',
     method='fwl'
   )
 }} as linreg

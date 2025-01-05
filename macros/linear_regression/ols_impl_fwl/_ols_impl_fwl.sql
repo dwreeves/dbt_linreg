@@ -96,8 +96,8 @@
                   endog,
                   exog,
                   add_constant=True,
-                  format=None,
-                  format_options=None,
+                  output=None,
+                  output_options=None,
                   group_by=None,
                   alpha=None,
                   method_options=None) -%}
@@ -108,8 +108,8 @@
     endog=endog,
     exog=exog,
     add_constant=add_constant,
-    format=format,
-    format_options=format_options,
+    output=output,
+    output_options=output_options,
     group_by=group_by,
     alpha=alpha
   )) }}
@@ -119,8 +119,8 @@
     endog=endog,
     exog=exog,
     add_constant=add_constant,
-    format=format,
-    format_options=format_options,
+    output=output,
+    output_options=output_options,
     group_by=group_by,
     alpha=alpha
   )) }}
@@ -186,7 +186,7 @@ _dbt_linreg_step0 as (
 {% for step in range(1, (exog | length)) %}
 _dbt_linreg_step{{ step }} as (
   with
-  __dbt_linreg_coefs as (
+  __dbt_linreg_coefs{{ step }} as (
     select
       {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(6) }}
       {#- Slope terms #}
@@ -237,7 +237,7 @@ _dbt_linreg_step{{ step }} as (
     {%- endif %}
     {%- endfor %}
   from _dbt_linreg_step0 as b
-  {{ dbt_linreg._join_on_groups(group_by, 'b', '__dbt_linreg_coefs') | indent(2) }}
+  {{ dbt_linreg._join_on_groups(group_by, 'b', '__dbt_linreg_coefs'~step) | indent(2) }}
 ),
 {%- if loop.last %}
 _dbt_linreg_final_coefs as (
@@ -273,8 +273,8 @@ _dbt_linreg_final_coefs as (
     exog_aliased=exog_aliased,
     add_constant=add_constant,
     group_by=group_by,
-    format=format,
-    format_options=format_options,
+    output=output,
+    output_options=output_options,
     calculate_standard_error=False
   )
 }}

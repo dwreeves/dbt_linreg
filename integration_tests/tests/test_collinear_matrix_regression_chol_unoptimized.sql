@@ -16,14 +16,21 @@ expected as (
 
 )
 
-select base.*
+select
+  coalesce(base.variable_name, expected.variable_name) as variable_name,
+  expected.coefficient as expected_coefficient,
+  base.coefficient as actual_coefficient,
+  expected.standard_error as expected_standard_error,
+  base.standard_error as actual_standard_error,
+  expected.t_statistic as expected_t_statistic,
+  base.t_statistic as actual_t_statistic
 from {{ ref('collinear_matrix_regression_chol_unoptimized') }} as base
 full outer join expected
 on base.variable_name = expected.variable_name
 where
-  round(base.coefficient, 7) != round(expected.coefficient, 7)
-  or round(base.standard_error, 7) != round(expected.standard_error, 7)
-  or round(base.t_statistic, 7) != round(expected.t_statistic, 7)
+  abs(base.coefficient - expected.coefficient) > {{ var("_test_precision_collinear_matrix") }}
+  or abs(base.standard_error - expected.standard_error) > {{ var("_test_precision_collinear_matrix") }}
+  or abs(base.t_statistic - expected.t_statistic) > {{ var("_test_precision_collinear_matrix") }}
   or base.coefficient is null
   or base.standard_error is null
   or base.t_statistic is null

@@ -8,7 +8,7 @@ select * from {{
     table=ref('simple_matrix'),
     endog='y',
     exog=['xa'],
-    format='long',
-    format_options={'round': 5}
+    output='long',
+    output_options={'round': 5}
   )
 }} as linreg

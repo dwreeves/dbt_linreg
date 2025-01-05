@@ -21,6 +21,10 @@
   {{ return((prefix if prefix is not none else '') ~ 'i' ~ i ~ 'j' ~ j) }}
 {% endmacro %}
 
+{% macro clickhouse___cell_or_alias(i, j, d, prefix=none) %}
+  {{ return((prefix if prefix is not none else '') ~ 'i' ~ i ~ 'j' ~ j) }}
+{% endmacro %}
+
 {% macro _safe_sqrt(x, safe=True) %}
   {{ return(
     adapter.dispatch('_safe_sqrt', 'dbt_linreg')
@@ -99,8 +103,8 @@
                    endog,
                    exog,
                    add_constant=True,
-                   format=None,
-                   format_options=None,
+                   output=None,
+                   output_options=None,
                    group_by=None,
                    alpha=None,
                    method_options=None) -%}
@@ -111,15 +115,15 @@
     endog=endog,
     exog=exog,
     add_constant=add_constant,
-    format=format,
-    format_options=format_options,
+    output=output,
+    output_options=output_options,
     group_by=group_by,
     alpha=alpha
   )) }}
 {%- endif %}
 {%- set subquery_optimization = method_options.get('subquery_optimization', True) %}
 {%- set safe_mode = method_options.get('safe', True) %}
-{%- set calculate_standard_error = format_options.get('calculate_standard_error', (not alpha)) and format == 'long' %}
+{%- set calculate_standard_error = output_options.get('calculate_standard_error', (not alpha)) and output == 'long' %}
 {%- if alpha and calculate_standard_error %}
   {% do log(
     'Warning: Standard errors are NOT designed to take into account ridge regression regularization.'
@@ -311,8 +315,8 @@ _dbt_linreg_stderrs as (
     exog_aliased=exog_aliased,
     add_constant=add_constant,
     group_by=group_by,
-    format=format,
-    format_options=format_options,
+    output=output,
+    output_options=output_options,
     calculate_standard_error=calculate_standard_error
   )
 }})

@@ -14,7 +14,7 @@
 
 # Overview
 
-**dbt_linreg** is an easy way to perform linear regression and ridge regression in SQL (Snowflake, DuckDB, and more) with OLS using dbt's Jinja2 templating.
+**dbt_linreg** is an easy way to perform linear regression and ridge regression in SQL (Snowflake, DuckDB, Clickhouse, and more) with OLS using dbt's Jinja2 templating.
 
 Reasons to use **dbt_linreg**:
 
@@ -32,7 +32,7 @@ Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.6"
+    version: "0.3.0"
 ```
 
 The full file will look something like this:
@@ -43,7 +43,7 @@ packages:
   # Other packages here
   # ...
   - package: "dwreeves/dbt_linreg"
-    version: "0.2.6"
+    version: "0.3.0"
 ```
 
 # Examples
@@ -63,8 +63,8 @@ select * from {{
     table=ref('simple_matrix'),
     endog='y',
     exog=['xa', 'xb', 'xc'],
-    format='long',
-    format_options={'round': 5}
+    output='long',
+    output_options={'round': 5}
   )
 }} as linreg
 ```
@@ -171,9 +171,10 @@ group by
 
 - Snowflake
 - DuckDB
+- Clickhouse
 - Postgres\*
 
-If `dbt_linreg` does not work in your database tool, please let me know in a bug report and I can make sure it is supported.
+If **dbt_linreg** does not work in your database tool, please let me know in a bug report.
 
 > _* Minimal support. Postgres is syntactically supported, but is not performant under certain circumstances._
 
@@ -189,8 +190,8 @@ def ols(
     endog: str,
     exog: Union[str, list[str]],
     add_constant: bool = True,
-    format: Literal['wide', 'long'] = 'wide',
-    format_options: Optional[dict[str, Any]] = None,
+    output: Literal['wide', 'long'] = 'wide',
+    output_options: Optional[dict[str, Any]] = None,
     group_by: Optional[Union[str, list[str]]] = None,
     alpha: Optional[Union[float, list[float]]] = None,
     method: Literal['chol', 'fwl'] = 'chol',
@@ -205,24 +206,25 @@ Where:
 - **endog**: The endogenous variable / y variable / target variable of the regression. (You can also specify `y=...` instead of `endog=...` if you prefer.)
 - **exog**: The exogenous variables / X variables / features of the regression. (You can also specify `x=...` instead of `exog=...` if you prefer.)
 - **add_constant**: If true, a constant term is added automatically to the regression.
-- **format**: Either "wide" or "long" format for coefficients. See **Formats and format options** for more.
+- **output**: Either "wide" or "long" output format for coefficients. See **Outputs and output options** for more.
   - If `wide`, the variables span the columns with their original variable names, and the coefficients fill a single row.
   - If `long`, the coefficients are in a single column called `coefficient`, and the variable names are in a single column called `variable_name`.
-- **format_options**: See **Formats and format options** section for more.
+- **output_options**: See **Formats and format options** section for more.
 - **group_by**: If specified, the regression will be grouped by these variables, and individual regressions will run on each group.
 - **alpha**: If not null, the regression will be run as a ridge regression with a penalty of `alpha`. See **Notes** section for more information.
 - **method**: The method used to calculate the regression. See **Methods and method options** for more.
 - **method_options**: Options specific to the estimation method. See **Methods and method options** for more.
 
-# Formats and format options
+# Outputs and output options
 
-Outputs can be returned either in `format='long'` or `format='wide'`.
+Outputs can be returned either in `output='long'` or `output='wide'`.
 
-(In the future, I might add one or two more formats, notably a summary table format.)
+All outputs have their own output options, which can be passed into the `output_options=` arg as a dict, e.g. `output_options={'foo': 'bar'}`.
 
-All formats have their own format options, which can be passed into the `format_options=` arg as a dict, e.g. `format_options={'foo': 'bar'}`.
+`output=` and `output_options=` were formerly named `format=` and `format_options=` respectively.
+This has been deprecated to make **dbt_linreg**'s API more consistent with **dbt_pca**'s API.
 
-### Options for `format='long'`
+### Options for `output='long'`
 
 - **round** (default = `None`): If not None, round all coefficients to `round` number of digits.
 - **constant_name** (default = `'const'`): String name that refers to constant term.
@@ -230,13 +232,13 @@ All formats have their own format options, which can be passed into the `format_
 - **coefficient_column_name** (default = `'coefficient'`): Column name storing model coefficients.
 - **strip_quotes** (default = `True`): If true, strip outer quotes from column names if provided; if false, always use string literals.
 
-These options are available for `format='long'` only when `method='chol'`:
+These options are available for `output='long'` only when `method='chol'`:
 
 - **calculate_standard_error** (default = `True if not alpha else False`): If true, provide the standard error in the output.
 - **standard_error_column_name** (default = `'standard_error'`): Column name storing the standard error for the parameter.
 - **t_statistic_column_name** (default = `'t_statistic'`): Column name storing the t-statistic for the parameter.
 
-### Options for `format='wide'`
+### Options for `output='wide'`
 
 - **round** (default = `None`): If not None, round all coefficients to `round` number of digits.
 - **constant_name** (default = `'const'`): String name that refers to constant term.
@@ -290,6 +292,7 @@ So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgre
   - A scalar input (e.g. `alpha=0.01`) will apply an alpha of `0.01` to all features.
   - An array input (e.g. `alpha=[0.01, 0.02, 0.03, 0.04, 0.05]`) will apply an alpha of `0.01` to the first column, `0.02` to the second column, etc.
   - `alpha` is equivalent to what TEoSL refers to as "lambda," times the sample size N. That is to say: `α ≡ λ * N`.
+  - (Of course, you can regularize the constant term by DIYing your own constant term and doing `add_constant=false`.)
 
 - Regularization as currently implemented for the `chol` method tends to be very slow in OLTP systems (e.g. Postgres), but is very performant in OLAP systems (e.g. Snowflake, DuckDB, BigQuery, Redshift). As dbt is more commonly used in OLAP contexts, the code base is optimized for the OLAP use case.
   - That said, it may be possible to make regularization in OLTP more performant (e.g. with augmentation of the design matrix), so PRs are welcome.
@@ -298,11 +301,14 @@ So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgre
 
 ### Possible future features
 
-Some things I am thinking about working on down the line:
+Some things that could happen in the future:
 
-- **Optimization:** Given access to Jinja2 templating, there may be more efficient ways to calculate the get a closed form OLS solution than the approach taken in this code base.
+- Weighted least squares (WLS)
+- P-values
+- Heteroskedasticity robust standard errors
+- Recursive CTE implementations + long formatted inputs
 
-- **Standard errors and t-stats:** For the `format='long'` output (or perhaps a new format?), there is space to sensibly add t-stats and standard errors. The main challenge is that this necessitates inverting a covariance matrix, although this is theoretically doable using Jinja2 templating.
+Note that although I maintain this library (as of writing in 2025), I do not actively update it much with new features, so this wish list is unlikely unless I personally need it or unless someone else contributes these features.
 
 # FAQ
 
@@ -310,7 +316,7 @@ Some things I am thinking about working on down the line:
 
 See **Methods and method options** section for a full breakdown of each linear regression implementation.
 
-All approaches were validated using Statsmodels `sm.OLS()`. Note that the ridge regression coefficients differ very slightly from Statsmodels's outputs for currently unknown reasons, but the coefficients are very close (I enforce a `<0.01%` deviation from Statsmodels's ridge regression coefficients in my integration tests).
+All approaches were validated using Statsmodels `sm.OLS()`.
 
 ### BigQuery (or other database) has linear regression implemented natively. Why should I use `dbt_linreg` over that?
 
@@ -334,11 +340,11 @@ I opt to leave out dummy variable support because it's tricky, and I want to kee
 
 Note that you couldn't simply add categorical variables in the same list as numeric variables because Jinja2 templating is not natively aware of the types you're feeding through it, nor does Jinja2 know the values that a string variable can take on. The way you would actually implement categorical variables is with `group by` trickery (i.e. center both y and X by categorical variable group means), although I am not sure how to do that efficiently for more than one categorical variable column.
 
-If you'd like to regress on a categorical variable, for now you'll need to do your own feature engineering, e.g. `(foo = 'bar')::int as foo_bar`
+If you'd like to regress on a categorical variable, for now you'll need to do your own feature engineering, e.g. `(foo = 'bar')::int as foo_bar, (foo = 'baz')::int as foo_baz`.
 
 ### Why are there no p-values?
 
-This is planned for the future, so stay tuned! P-values would require a lookup on a dimension table, which is a significant amount of work to manage nicely, but I hope to get to it soon.
+This is something that might happen in the future. P-values would require a lookup on a dimension table, which is a significant amount of work to manage nicely.
 
 In the meanwhile, you can implement this yourself-- just create a dimension table that left joins a t-statistic on a half-open interval to lookup a p-value.
 

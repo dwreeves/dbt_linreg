@@ -1,7 +1,7 @@
 {{
   config(
     materialized="table",
-    tags=["skip-postgres"]
+    tags=["skip-postgres", "skip-clickhouse"]
   )
 }}
 select * from {{
@@ -10,7 +10,7 @@ select * from {{
     endog='y',
     exog=['x1', 'x2', 'x3'],
     group_by=['gb_var'],
-    format='long',
+    output='long',
     method='chol',
     method_options={'subquery_optimization': False}
   )

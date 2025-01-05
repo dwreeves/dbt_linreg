@@ -10,6 +10,6 @@ select * from {{
     table=ref('simple_matrix'),
     endog='y',
     exog=['xa', 'xb', 'xc', 'xd', 'xe', 'xf', 'xg', 'xh'],
-    format='wide',
+    output='wide',
   )
 }} as linreg
