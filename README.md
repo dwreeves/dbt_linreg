@@ -308,7 +308,6 @@ So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgre
 ## Setting method options globally
 
 Method options can be set globally via `vars`, e.g. in your `dbt_project.yml`. Each `method` gets its own config, e.g. the `dbt_linreg: method_options: chol: ...` namespace only applies to the `chol` method. Here is an example:
->>>>>>> 72d089e (update readme)
 
 ```yaml
 # dbt_project.yml
