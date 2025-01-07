@@ -32,21 +32,21 @@
 {# Every OLS method ends with a "_dbt_linreg_final_coefs" CTE with a common
    interface. This interface can then be transformed in a standard way using the
    final_select() macro, which formats the output for the user. #}
-{% macro final_select(exog=None,
-                      exog_aliased=None,
-                      group_by=None,
-                      add_constant=True,
-                      output=None,
-                      output_options=None,
-                      calculate_standard_error=False) -%}
+{% macro final_select(exog=none,
+                      exog_aliased=none,
+                      group_by=none,
+                      add_constant=true,
+                      output=none,
+                      output_options=none,
+                      calculate_standard_error=false) -%}
 {%- if output == 'long' %}
 {%- if add_constant %}
 select
   {{ dbt_linreg._unalias_gb_cols(group_by, prefix='b') | indent(2) }}
-  {{ dbt.string_literal(output_options.get('constant_name', 'const')) }} as {{ output_options.get('variable_column_name', 'variable_name') }},
-  {{ dbt_linreg._maybe_round('x0_coef', output_options.get('round')) }} as {{ output_options.get('coefficient_column_name', 'coefficient') }}{% if calculate_standard_error %},
-  {{ dbt_linreg._maybe_round('x0_stderr', output_options.get('round')) }} as {{ output_options.get('standard_error_column_name', 'standard_error') }},
-  {{ dbt_linreg._maybe_round('x0_coef/x0_stderr', output_options.get('round')) }} as {{ output_options.get('t_statistic_column_name', 't_statistic') }}
+  {{ dbt.string_literal(dbt_linreg._get_output_option('constant_name', output_options, 'const')) }} as {{ dbt_linreg._get_output_option('variable_column_name', output_options, 'variable_name') }},
+  {{ dbt_linreg._maybe_round('x0_coef', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._get_output_option('coefficient_column_name', output_options, 'coefficient') }}{% if calculate_standard_error %},
+  {{ dbt_linreg._maybe_round('x0_stderr', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._get_output_option('standard_error_column_name', output_options, 'standard_error') }},
+  {{ dbt_linreg._maybe_round('x0_coef/x0_stderr', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._get_output_option('t_statistic_column_name', output_options, 't_statistic') }}
   {%- endif %}
 from _dbt_linreg_final_coefs as b
 {%- if calculate_standard_error %}
@@ -59,10 +59,10 @@ union all
 {%- for i in exog_aliased %}
 select
   {{ dbt_linreg._unalias_gb_cols(group_by, prefix='b') | indent(2) }}
-  {{ dbt.string_literal(dbt_linreg._strip_quotes(exog[loop.index0], output_options)) }} as {{ output_options.get('variable_column_name', 'variable_name') }},
-  {{ dbt_linreg._maybe_round(i~'_coef', output_options.get('round')) }} as {{ output_options.get('coefficient_column_name', 'coefficient') }}{% if calculate_standard_error %},
-  {{ dbt_linreg._maybe_round(i~'_stderr', output_options.get('round')) }} as {{ output_options.get('standard_error_column_name', 'standard_error') }},
-  {{ dbt_linreg._maybe_round(i~'_coef/'~i~'_stderr', output_options.get('round')) }} as {{ output_options.get('t_statistic_column_name', 't_statistic') }}
+  {{ dbt.string_literal(dbt_linreg._strip_quotes(exog[loop.index0], output_options)) }} as {{ dbt_linreg._get_output_option('variable_column_name', output_options, 'variable_name') }},
+  {{ dbt_linreg._maybe_round(i~'_coef', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._get_output_option('coefficient_column_name', output_options, 'coefficient') }}{% if calculate_standard_error %},
+  {{ dbt_linreg._maybe_round(i~'_stderr', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._get_output_option('standard_error_column_name', output_options, 'standard_error') }},
+  {{ dbt_linreg._maybe_round(i~'_coef/'~i~'_stderr', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._get_output_option('t_statistic_column_name', output_options, 't_statistic') }}
   {%- endif %}
 from _dbt_linreg_final_coefs as b
 {%- if calculate_standard_error %}
@@ -76,13 +76,13 @@ union all
 select
   {%- if add_constant -%}
   {{ dbt_linreg._unalias_gb_cols(group_by) | indent(2) }}
-  {{ dbt_linreg._maybe_round('x0_coef', output_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(output_options.get('constant_name', 'const'), output_options) }}
+  {{ dbt_linreg._maybe_round('x0_coef', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._format_wide_variable_column(dbt_linreg._get_output_option('constant_name', output_options, 'const'), output_options) }}
   {%- if exog_aliased -%}
   ,
   {%- endif -%}
   {%- endif -%}
   {%- for i in exog_aliased %}
-  {{ dbt_linreg._maybe_round(i~'_coef', output_options.get('round')) }} as {{ dbt_linreg._format_wide_variable_column(exog[loop.index0], output_options) }}
+  {{ dbt_linreg._maybe_round(i~'_coef', dbt_linreg._get_output_option('round', output_options)) }} as {{ dbt_linreg._format_wide_variable_column(exog[loop.index0], output_options) }}
   {%- if not loop.last -%}
   ,
   {%- endif %}
@@ -102,7 +102,7 @@ select * from _dbt_linreg_final_coefs
    In this situation, we want to strip the double quotes when presenting
    outputs in a long format. #}
 {% macro _strip_quotes(x, output_options) -%}
-  {% if output_options.get('strip_quotes') | default(True) %}
+  {% if dbt_linreg._get_output_option('strip_quotes', output_options) | default(True) %}
     {% if x[0] == '"' and x[-1] == '"' and (x | length) > 1 %}
     {{ return(x[1:-1]) }}
     {% endif %}
@@ -117,11 +117,11 @@ select * from _dbt_linreg_final_coefs
   {% else %}
     {% set _add_quotes = False %}
   {% endif %}
-  {% if output_options.get('variable_column_prefix') %}
-    {% set x = output_options.get('variable_column_prefix') ~ x %}
+  {% if dbt_linreg._get_output_option('variable_column_prefix', output_options) %}
+    {% set x = dbt_linreg._get_output_option('variable_column_prefix', output_options) ~ x %}
   {% endif %}
-  {% if output_options.get('variable_column_suffix') %}
-    {% set x = x ~ output_options.get('variable_column_suffix') %}
+  {% if dbt_linreg._get_output_option('variable_column_suffix', output_options) %}
+    {% set x = x ~ dbt_linreg._get_output_option('variable_column_suffix', output_options) %}
   {% endif %}
   {% if _add_quotes %}
     {% set x = '"' ~ x ~ '"' %}
@@ -227,3 +227,11 @@ on
   {%- endfor %}
 {%- endif %}
 {%- endmacro %}
+
+{% macro _get_output_option(field, output_options, default=none) %}
+  {{ return(output_options.get(field, var("dbt_linreg", {}).get("output_options", {}).get(field, default))) }}
+{% endmacro %}
+
+{% macro _get_method_option(method, field, method_options, default=none) %}
+  {{ return(method_options.get(field, var("dbt_linreg", {}).get("method_options", {}).get("method", {}).get(field, default))) }}
+{% endmacro %}

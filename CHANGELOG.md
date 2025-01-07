@@ -4,6 +4,7 @@
 
 - Official support for Clickhouse!
 - Rename `format=` and `format_options=` to `output=` and `output_options=` to make the API consistent with **dbt_pca**.
+- Allow for setting method and output options globally with `vars:`
 
 ### `0.2.6`
 

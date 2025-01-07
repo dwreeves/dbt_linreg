@@ -402,15 +402,21 @@ name = "dbt-linreg"
 version = "0.3.0"
 source = { virtual = "." }
 
-[package.dependency-groups]
-dbt = [
+[package.optional-dependencies]
+clickhouse = [
     { name = "dbt-clickhouse" },
     { name = "dbt-core" },
+]
+duckdb = [
+    { name = "dbt-core" },
     { name = "dbt-duckdb" },
+    { name = "duckdb" },
+]
+postgres = [
+    { name = "dbt-core" },
     { name = "dbt-postgres" },
 ]
 python-dev = [
-    { name = "duckdb" },
     { name = "pandas" },
     { name = "pre-commit" },
     { name = "pyyaml" },
@@ -421,23 +427,21 @@ python-dev = [
 ]
 
 [package.metadata]
-
-[package.metadata.dependency-groups]
-dbt = [
-    { name = "dbt-clickhouse" },
-    { name = "dbt-core", specifier = "<1.9.0" },
-    { name = "dbt-duckdb" },
-    { name = "dbt-postgres" },
-]
-python-dev = [
-    { name = "duckdb", specifier = ">=1.1.3" },
-    { name = "pandas", specifier = ">=2.2.3" },
-    { name = "pre-commit", specifier = ">=4.0.1" },
-    { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "rich-click", specifier = ">=1.8.5" },
-    { name = "ruff", specifier = ">=0.8.4" },
-    { name = "statsmodels", specifier = ">=0.14.4" },
-    { name = "tabulate", specifier = ">=0.9.0" },
+requires-dist = [
+    { name = "dbt-clickhouse", marker = "extra == 'clickhouse'" },
+    { name = "dbt-core", marker = "extra == 'clickhouse'", specifier = "<1.9.0" },
+    { name = "dbt-core", marker = "extra == 'duckdb'", specifier = "<1.9.0" },
+    { name = "dbt-core", marker = "extra == 'postgres'", specifier = "<1.9.0" },
+    { name = "dbt-duckdb", marker = "extra == 'duckdb'" },
+    { name = "dbt-postgres", marker = "extra == 'postgres'" },
+    { name = "duckdb", marker = "extra == 'duckdb'", specifier = ">=1.1.3" },
+    { name = "pandas", marker = "extra == 'python-dev'", specifier = ">=2.2.3" },
+    { name = "pre-commit", marker = "extra == 'python-dev'", specifier = ">=4.0.1" },
+    { name = "pyyaml", marker = "extra == 'python-dev'", specifier = ">=6.0.2" },
+    { name = "rich-click", marker = "extra == 'python-dev'", specifier = ">=1.8.5" },
+    { name = "ruff", marker = "extra == 'python-dev'", specifier = ">=0.8.4" },
+    { name = "statsmodels", marker = "extra == 'python-dev'", specifier = ">=0.14.4" },
+    { name = "tabulate", marker = "extra == 'python-dev'", specifier = ">=0.9.0" },
 ]
 
 [[package]]

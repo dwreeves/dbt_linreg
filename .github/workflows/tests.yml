@@ -43,7 +43,7 @@ jobs:
           sudo apt-get install
           chmod +x ./run
           uv venv
-          uv sync --group python-dev
+          uv sync --extra python-dev
           uv pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-${DBT_TARGET}==$DBT_CORE_VERSION"
         env:
           UV_NO_SYNC: true
