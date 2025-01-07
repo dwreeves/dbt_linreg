@@ -22,7 +22,8 @@ Reasons to use **dbt_linreg**:
 - 📱 **Simple interface:** Just define a `table=` (which works with `ref()`, `source()`, and CTEs), a y-variable with `endog=`, your x-variables in a list with `exog=...`, and you're all set! Note that the API is loosely based on Statsmodels's naming conventions.
 - 🤖 **Support for ridge regression:** Just pass in `alpha=scalar` or `alpha=[scalar1, scalar2, ...]` to regularize your regressions. (Note: regressors are not automatically standardized.)
 - 🤸‍ **Flexibility:** Tons of formatting options available to return coefficients the way you want.
-- 💪 **Durable and tested:** The API provides feedback on parsing errors, and everything in this code base has been tested (check the continuous integration).
+- 🤗 **User friendly:** The API provides comprehensive feedback on input errors.
+- 💪 **Durable and tested:** Everything in this code base is tested against equivalent regressions performed in Statsmodels with high precision assertions (between 10e-6 to 10e-7, depending on the database engine).
 
 # Installation
 
