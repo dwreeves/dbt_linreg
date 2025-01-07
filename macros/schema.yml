@@ -122,6 +122,12 @@ macros:
   - name: _gb_cols
     docs:
       show: false
+  - name: _get_method_option
+    docs:
+      show: false
+  - name: _get_output_option
+    docs:
+      show: false
   - name: _join_on_groups
     docs:
       show: false
@@ -165,6 +171,9 @@ macros:
     docs:
       show: false
   - name: bigquery___safe_sqrt
+    docs:
+      show: false
+  - name: clickhouse___cell_or_alias
     docs:
       show: false
   - name: default___cell_or_alias
