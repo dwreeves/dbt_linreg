@@ -305,21 +305,6 @@ There are a few reasons why this method is discouraged over the `chol` method:
 
 So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgres) for unregularized coefficient estimation. Long story short, the `chol` method relies on subquery optimization to be more performant than `fwl`; however, OLTP systems do not benefit at all from subquery optimization. This means that `fwl` is slightly more performant in this context.
 
-# Notes
-
-- ⚠️ **If your coefficients are null, it does not mean dbt_linreg is broken, it most likely means your feature columns are perfectly multicollinear.** If you are 100% sure that is not the issue, please file a bug report with a minimally reproducible example.
-
-- Regularization is implemented using nearly the same approach as Statsmodels; the only difference is that the constant term can never be regularized. This means:
-  - A scalar input (e.g. `alpha=0.01`) will apply an alpha of `0.01` to all features.
-  - An array input (e.g. `alpha=[0.01, 0.02, 0.03, 0.04, 0.05]`) will apply an alpha of `0.01` to the first column, `0.02` to the second column, etc.
-  - `alpha` is equivalent to what TEoSL refers to as "lambda," times the sample size N. That is to say: `α ≡ λ * N`.
-  - (Of course, you can regularize the constant term by DIYing your own constant term and doing `add_constant=false`.)
-
-- Regularization as currently implemented for the `chol` method tends to be very slow in OLTP systems (e.g. Postgres), but is very performant in OLAP systems (e.g. Snowflake, DuckDB, BigQuery, Redshift). As dbt is more commonly used in OLAP contexts, the code base is optimized for the OLAP use case.
-  - That said, it may be possible to make regularization in OLTP more performant (e.g. with augmentation of the design matrix), so PRs are welcome.
-
-- Regression coefficients in Postgres are always `numeric` types.
-
 ## Setting method options globally
 
 Method options can be set globally via `vars`, e.g. in your `dbt_project.yml`. Each `method` gets its own config, e.g. `dbt_linreg: chol: ...`. Here is an example:
@@ -335,7 +320,22 @@ vars:
 
 Method options passed via `ols()` always take precedence over globally set method options.
 
-# Possible future features
+# Notes
+
+- ⚠️ **If your coefficients are null, it does not mean dbt_linreg is broken, it most likely means your feature columns are perfectly multicollinear.** If you are 100% sure that is not the issue, please file a bug report with a minimally reproducible example.
+
+- Regularization is implemented using nearly the same approach as Statsmodels; the only difference is that the constant term can never be regularized. This means:
+  - A scalar input (e.g. `alpha=0.01`) will apply an alpha of `0.01` to all features.
+  - An array input (e.g. `alpha=[0.01, 0.02, 0.03, 0.04, 0.05]`) will apply an alpha of `0.01` to the first column, `0.02` to the second column, etc.
+  - `alpha` is equivalent to what TEoSL refers to as "lambda," times the sample size N. That is to say: `α ≡ λ * N`.
+  - (Of course, you can regularize the constant term by DIYing your own constant term and doing `add_constant=false`.)
+
+- Regularization as currently implemented for the `chol` method tends to be very slow in OLTP systems (e.g. Postgres), but is very performant in OLAP systems (e.g. Snowflake, DuckDB, BigQuery, Redshift). As dbt is more commonly used in OLAP contexts, the code base is optimized for the OLAP use case.
+  - That said, it may be possible to make regularization in OLTP more performant (e.g. with augmentation of the design matrix), so PRs are welcome.
+
+- Regression coefficients in Postgres are always `numeric` types.
+
+## Possible future features
 
 Some things that could happen in the future:
 
