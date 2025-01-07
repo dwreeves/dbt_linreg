@@ -35,32 +35,23 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.4.0
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-      - name: Run Clickhouse
-        if: ${{ matrix.db_target == 'clickhouse' }}
-        run: |
-          docker run -d -p 8123:8123 --name dbt-linreg-clickhouse --ulimit nofile=262144:262144 clickhouse/clickhouse-server
-      - name: Install dependencies
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Setup
         run: |
           sudo apt-get update
           sudo apt-get install
           chmod +x ./run
           ./run setup
-          pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-${DBT_TARGET}"
+          uv pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-${DBT_TARGET}==$DBT_CORE_VERSION"
         env:
+          UV_NO_SYNC: true
           DBT_CORE_VERSION: ${{ matrix.dbt_core }}
           DBT_TARGET: ${{ matrix.db_target }}
       - name: Test
         run: ./run test "${DBT_TARGET}"
         env:
+          UV_NO_SYNC: true
           DBT_TARGET: ${{ matrix.db_target }}
           POSTGRES_HOST: localhost
           POSTGRES_USER: postgres

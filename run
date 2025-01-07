@@ -11,12 +11,21 @@ if [ -f .env ]; then
 fi
 
 function dbt {
-  poetry run dbt "${@}"
+  uv run dbt "${@}"
 }
 
 function setup {
-  poetry install
-  poetry run pre-commit install
+  uv sync
+  uvx pre-commit install
+}
+
+function docker-run-clickhouse {
+    docker run \
+      -d \
+      -p 8123:8123 \
+      --name dbt-linreg-clickhouse \
+      --ulimit nofile=262144:262144 \
+      clickhouse/clickhouse-server
 }
 
 function test {
@@ -29,12 +38,7 @@ function test {
 
   if [ "${target}" = "clickhouse" ];
   then
-    docker run \
-      -d \
-      -p 8123:8123 \
-      --name dbt-linreg-clickhouse \
-      --ulimit nofile=262144:262144 \
-      clickhouse/clickhouse-server || true
+    docker-run-clickhouse || true
   fi
 
   if [ -z "${GITHUB_ACTIONS}" ] && [ "${target}" = "duckdb" ];
@@ -42,7 +46,7 @@ function test {
     rm -f dbt.duckdb
   fi
 
-  poetry run python scripts.py gen-test-cases
+  uv run scripts.py gen-test-cases
   dbt deps --target "${target}"
   dbt seed --target "${target}"
   dbt run --target "${target}" --selector "${target}-selector"
@@ -50,11 +54,12 @@ function test {
 }
 
 function lint {
-  poetry run pre-commit run -a
+  uv run pre-commit run -a
 }
 
 function docs:deploy {
-  mkdocs gh-deploy -f docs/mkdocs.yml
+  # shellcheck disable=SC2046
+  uv run $(xargs -I{} echo --with {} < docs/requirements.txt) mkdocs gh-deploy -f docs/mkdocs.yml
 }
 
 function help {
