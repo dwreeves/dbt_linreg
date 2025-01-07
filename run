@@ -16,8 +16,8 @@ function dbt {
 }
 
 function setup {
-  uv sync --group python-dev
-  uv sync --group dbt
+  uv sync --extra python-dev
+  uv sync --extra dbt
   uvx pre-commit install
 }
 
