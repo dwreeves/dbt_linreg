@@ -169,14 +169,19 @@ group by
 
 **dbt_linreg** should work with most SQL databases, but so far, testing has been done for the following database tools:
 
-- Snowflake
-- DuckDB
-- Clickhouse
-- Postgres\*
+| Database       | Supported | Precision asserted in CI\* | Supported since version |
+|----------------|-----------|----------------------------|-------------------------|
+| **Snowflake**  | ✅         | _n/a_                      | 0.1.0                   |
+| **DuckDB**     | ✅         | 10e-7                      | 0.1.0                   |
+| **Postgres**†  | ✅         | 10e-7                      | 0.2.3                   |
+| **Redshift**   | ✅         | _n/a_                      | 0.2.4                   |
+| **Clickhouse** | ✅         | 10e-6                      | 0.3.0                   |
 
 If **dbt_linreg** does not work in your database tool, please let me know in a bug report.
 
-> _* Minimal support. Postgres is syntactically supported, but is not performant under certain circumstances._
+> _\* Precision is for test cases using the **collinear_matrix** for unregularized regressions._
+
+> _† Minimal support for Postgres. Postgres is syntactically supported, but is not performant under certain circumstances._
 
 # API
 
@@ -226,24 +231,38 @@ This has been deprecated to make **dbt_linreg**'s API more consistent with **dbt
 
 ### Options for `output='long'`
 
-- **round** (default = `None`): If not None, round all coefficients to `round` number of digits.
-- **constant_name** (default = `'const'`): String name that refers to constant term.
-- **variable_column_name** (default = `'variable_name'`): Column name storing strings of variable names.
-- **coefficient_column_name** (default = `'coefficient'`): Column name storing model coefficients.
-- **strip_quotes** (default = `True`): If true, strip outer quotes from column names if provided; if false, always use string literals.
+- **round** (`int`; default = `None`): If not None, round all coefficients to `round` number of digits.
+- **constant_name** (`string`; default = `'const'`): String name that refers to constant term.
+- **variable_column_name** (`string`; default = `'variable_name'`): Column name storing strings of variable names.
+- **coefficient_column_name** (`string`; default = `'coefficient'`): Column name storing model coefficients.
+- **strip_quotes** (`bool`; default = `True`): If true, strip outer quotes from column names if provided; if false, always use string literals.
 
 These options are available for `output='long'` only when `method='chol'`:
 
-- **calculate_standard_error** (default = `True if not alpha else False`): If true, provide the standard error in the output.
-- **standard_error_column_name** (default = `'standard_error'`): Column name storing the standard error for the parameter.
-- **t_statistic_column_name** (default = `'t_statistic'`): Column name storing the t-statistic for the parameter.
+- **calculate_standard_error** (`bool`; default = `True if not alpha else False`): If true, provide the standard error in the output.
+- **standard_error_column_name** (`string`; default = `'standard_error'`): Column name storing the standard error for the parameter.
+- **t_statistic_column_name** (`string`; default = `'t_statistic'`): Column name storing the t-statistic for the parameter.
 
 ### Options for `output='wide'`
 
-- **round** (default = `None`): If not None, round all coefficients to `round` number of digits.
-- **constant_name** (default = `'const'`): String name that refers to constant term.
-- **variable_column_prefix** (default = `None`): If not None, prefix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)
-- **variable_column_suffix** (default = `None`): If not None, suffix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)
+- **round** (`int`; default = `None`): If not None, round all coefficients to `round` number of digits.
+- **constant_name** (`string`; default = `'const'`): String name that refers to constant term.
+- **variable_column_prefix** (`string`; default = `None`): If not None, prefix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)
+- **variable_column_suffix** (`string`; default = `None`): If not None, suffix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)
+
+## Setting output options globally
+
+Output options can be set globally via `vars`, e.g. in your `dbt_project.yml`:
+
+```yaml
+# dbt_project.yml
+vars:
+  dbt_linreg:
+    output_options:
+      round: 5
+```
+
+Output options passed via `ols()` always take precedence over globally set output options.
 
 # Methods and method options
 
@@ -262,8 +281,9 @@ This method calculates regression coefficients using the Moore-Penrose pseudo-in
 
 Specify these in a dict using the `method_options=` kwarg:
 
-- **safe** (default = `True`): If True, returns null coefficients instead of an error when X is perfectly multicollinear. If False, a negative value will be passed into a SQRT(), and most SQL engines will raise an error when this happens.
-- **subquery_optimization** (default: `True`): If True, nested subqueries are used during some of the steps to optimize the query speed. If false, the query is flattened.
+- **safe** (`bool`; default: `True`): If True, returns null coefficients instead of an error when X is perfectly multicollinear. If False, a negative value may be passed into a SQRT() or a divide by zero may occur, and most SQL engines will raise an error when this happens.
+- **subquery_optimization** (`bool`; default = `True`): If True, nested subqueries are used during some of the steps to optimize the query speed. If false, the query is flattened.
+- **intra_select_aliasing** (`bool`; default = `[depends on db]`): If True, within a single select statement, column aliases are used to refer to other columns created during that select. This can significantly reduce the text of a SQL query, but not all SQL engines support this. By default, for all databases officially supported by **dbt_linreg**, the best option is already selected. For unsupported databases, the default is `False` for broad compatibility, so if you are running **dbt_linreg** in an officially unsupported database engine which supports this feature, you may want to modify this option globally in your `vars` to be `true`.
 
 ## `fwl` method
 
@@ -299,11 +319,27 @@ So when should you use `fwl`? The main use case is in OLTP systems (e.g. Postgre
 
 - Regression coefficients in Postgres are always `numeric` types.
 
-### Possible future features
+## Setting method options globally
+
+Method options can be set globally via `vars`, e.g. in your `dbt_project.yml`. Each `method` gets its own config, e.g. `dbt_linreg: chol: ...`. Here is an example:
+
+```yaml
+# dbt_project.yml
+vars:
+  dbt_linreg:
+    method_options:
+      chol:
+        intra_select_aliasing: true
+```
+
+Method options passed via `ols()` always take precedence over globally set method options.
+
+# Possible future features
 
 Some things that could happen in the future:
 
 - Weighted least squares (WLS)
+- Efficient multivariate regression (i.e. multiple endogenous vectors sharing a single design matrix)
 - P-values
 - Heteroskedasticity robust standard errors
 - Recursive CTE implementations + long formatted inputs
@@ -332,7 +368,7 @@ There is no closed-form solution to L1 regularization, which makes it very very 
 
 ### Is the `group_by=[...]` argument like categorical variables / one-hot encodings?
 
-No. You should think of the group by more as a [seemingly unrelated regressions](https://en.wikipedia.org/wiki/Seemingly_unrelated_regressions) implementation than as a categorical variable implementation. It's running multiple regressions and each individual partition is its own `y` vector and `X` matrix. This is _not_ a replacement for dummy variables.
+No. The `group_by` runs a linear regressions within each group, and each individual partition is its own `y` vector and `X` matrix. This is _not_ a replacement for dummy variables.
 
 ### Why aren't categorical variables / one-hot encodings supported?
 

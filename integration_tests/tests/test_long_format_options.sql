@@ -3,7 +3,7 @@ with
 base as (
 
   select strip_quotes, vname, co
-  from {{ ref("long_output_options") }}
+  from {{ ref("long_format_options") }}
 
 ),
 
