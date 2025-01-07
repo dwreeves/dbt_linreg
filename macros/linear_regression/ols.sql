@@ -1,15 +1,17 @@
 {% macro ols(table,
-             endog=None,
-             exog=None,
-             x=None,
-             y=None,
-             add_constant=True,
-             format='wide',
-             format_options=None,
-             group_by=None,
-             alpha=None,
-             method=None,
-             method_options=None) -%}
+             endog=none,
+             exog=none,
+             x=none,
+             y=none,
+             add_constant=true,
+             output='wide',
+             output_options=none,
+             format=none,
+             format_options=none,
+             group_by=none,
+             alpha=none,
+             method=none,
+             method_options=none) -%}
 
   {#############################################################################
 
@@ -36,8 +38,29 @@
     ) }}
   {% endif %}
 
-  {% if format_options is none %}
-    {% set format_options = {} %}
+  {% if format_options is not none and output_options is not none %}
+    {{ exceptions.raise_compiler_error(
+      "`format_options` is deprecated and is another name for `output_options`."
+      " Please only set the `output_options`."
+    ) }}
+  {% endif %}
+
+
+  {% if format is not none and output is not none %}
+    {{ exceptions.raise_compiler_error(
+      "`format` is deprecated and is another name for `output`."
+      " Please only set the `output`."
+    ) }}
+  {% elif format is not none and output is none %}
+    {% set output = format %}
+  {% endif %}
+
+  {% if output_options is none %}
+    {% if format_options is not none %}
+      {% set output_options = format_options %}
+    {% else %}
+      {% set output_options = {} %}
+    {% endif %}
   {% endif %}
 
   {% if method_options is none %}
@@ -120,9 +143,16 @@
     {% endfor %}
   {% endfor %}
 
-  {% if format not in ['wide', 'long'] %}
+  {% if format is not none and format not in ['wide', 'long'] %}
       {{ exceptions.raise_compiler_error(
-        "Format must be either 'wide' or 'long'; received " ~ format ~ "."
+        "Format must be either 'wide' or 'long'; received " ~ output ~ "."
+        " Also, `format=` is deprecated; it is suggested you use `output=` instead."
+      ) }}
+  {% endif %}
+
+  {% if output not in ['wide', 'long'] %}
+      {{ exceptions.raise_compiler_error(
+        "Output must be either 'wide' or 'long'; received " ~ output ~ "."
       ) }}
   {% endif %}
 
@@ -143,8 +173,8 @@
         endog=endog,
         exog=exog,
         add_constant=add_constant,
-        format=format,
-        format_options=format_options,
+        output=output,
+        output_options=output_options,
         group_by=group_by,
         alpha=alpha,
         method_options=method_options
@@ -157,8 +187,8 @@
         endog=endog,
         exog=exog,
         add_constant=add_constant,
-        format=format,
-        format_options=format_options,
+        output=output,
+        output_options=output_options,
         group_by=group_by,
         alpha=alpha,
         method_options=method_options

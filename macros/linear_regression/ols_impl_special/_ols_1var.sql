@@ -2,8 +2,8 @@
                    endog,
                    exog,
                    add_constant=True,
-                   format=None,
-                   format_options=None,
+                   output=None,
+                   output_options=None,
                    group_by=None,
                    alpha=None) -%}
 {%- set exog_aliased = ['x1'] %}
@@ -73,8 +73,8 @@ _dbt_linreg_final_coefs as (
     exog_aliased=['x1'],
     add_constant=add_constant,
     group_by=group_by,
-    format=format,
-    format_options=format_options,
+    output=format,
+    output_options=output_options,
     calculate_standard_error=False
   )
 }}

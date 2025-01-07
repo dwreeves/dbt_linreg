@@ -1,10 +1,10 @@
 dbt_linreg_profile:
-  target: dbt-duckdb
+  target: duckdb
   outputs:
-    dbt-duckdb:
+    duckdb:
       type: duckdb
       path: dbt.duckdb
-    dbt-postgres:
+    postgres:
       type: postgres
       user: '{{ env_var("POSTGRES_USER") }}'
       password: '{{ env_var("POSTGRES_PASSWORD") }}'
@@ -12,3 +12,7 @@ dbt_linreg_profile:
       port: '{{ env_var("POSTGRES_PORT", "5432") | as_number }}'
       dbname: '{{ env_var("POSTGRES_DB", "dbt_linreg") }}'
       schema: '{{ env_var("POSTGRES_SCHEMA", "public") }}'
+    clickhouse:
+      type: clickhouse
+      port: 8123
+      schema: dbt_linreg

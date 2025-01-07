@@ -1,5 +1,10 @@
 # Changelog
 
+### `0.3.0`
+
+- Official support for Clickhouse!
+- Rename `format=` and `format_options=` to `output=` and `output_options=` to make the API consistent with **dbt_pca**.
+
 ### `0.2.6`
 
 - Fix bug with `group_by` on multiple variables; contributed by [@svkohler](https://github.com/dwreeves/dbt_linreg/issues/21).

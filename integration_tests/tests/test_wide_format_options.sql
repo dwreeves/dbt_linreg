@@ -5,7 +5,7 @@ with base as (
     "fooxa_bar",
     fooxb_bar
   from
-    {{ ref("wide_format_options") }}
+    {{ ref("wide_output_options") }}
 
 )
 

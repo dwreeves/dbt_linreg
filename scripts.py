@@ -192,7 +192,7 @@ def click_option_size(**kwargs):
     )
 
 
-@click.group("main")
+@click.group("main", context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
     """CLI for manually testing the code base."""
 

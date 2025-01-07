@@ -8,7 +8,7 @@ select * from {{
     table=ref('collinear_matrix'),
     endog='y',
     exog=['x1'],
-    format='long',
-    add_constant=False
+    output='long',
+    add_constant=false
   )
 }} as linreg

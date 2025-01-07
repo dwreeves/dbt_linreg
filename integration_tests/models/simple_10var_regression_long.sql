@@ -10,7 +10,7 @@ select * from {{
     table=ref('simple_matrix'),
     endog='y',
     exog=['xa', 'xb', 'xc', 'xd', 'xe', 'xf', 'xg', 'xh', 'xi', 'xj'],
-    format='long',
-    format_options={'round': 5}
+    output='long',
+    output_options={'round': 5}
   )
 }} as linreg

@@ -11,13 +11,25 @@ expected as (
     13.0 as xe
 )
 
-select base.*
+select
+  expected.const as expected_const,
+  base.const as actual_const,
+  expected.xa as expected_xa,
+  base.xa as actual_xa,
+  expected.xb as expected_xb,
+  base.xb as actual_xb,
+  expected.xc as expected_xc,
+  base.xc as actual_xc,
+  expected.xd as expected_xd,
+  base.xd as actual_xd,
+  expected.xe as expected_xe,
+  base.xe as actual_xe
 from {{ ref('simple_5var_regression_wide') }} as base, expected
 where not (
-  base.const = expected.const
-  and base.xa = expected.xa
-  and base.xb = expected.xb
-  and base.xc = expected.xc
-  and base.xd = expected.xd
-  and base.xe = expected.xe
+  abs(base.const - expected.const) <= {{ var("_test_precision_simple_matrix") }}
+  and abs(base.xa - expected.xa) <= {{ var("_test_precision_simple_matrix") }}
+  and abs(base.xb - expected.xb) <= {{ var("_test_precision_simple_matrix") }}
+  and abs(base.xc - expected.xc) <= {{ var("_test_precision_simple_matrix") }}
+  and abs(base.xd - expected.xd) <= {{ var("_test_precision_simple_matrix") }}
+  and abs(base.xe - expected.xe) <= {{ var("_test_precision_simple_matrix") }}
 )
