@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dbt_core: [1.4.*, 1.7.*]
+        dbt_core: [1.5.*, 1.8.*]
         db_target: [duckdb, postgres, clickhouse]
     services:
       postgres:
@@ -42,7 +42,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install
           chmod +x ./run
-          ./run setup
+          uv venv
+          uv sync --group python-dev
           uv pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-${DBT_TARGET}==$DBT_CORE_VERSION"
         env:
           UV_NO_SYNC: true
