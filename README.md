@@ -179,7 +179,7 @@ group by
 
 If **dbt_linreg** does not work in your database tool, please let me know in a bug report.
 
-> _\* Precision is for test cases using the **collinear_matrix** for unregularized regressions._
+> _\* Precision is for test cases using the **collinear_matrix** for unregularized regressions, in comparison to the output of the same regression in the Python package Statsmodels using `sm.OLS().fit(method="pinv")`. For example, coefficients for unregularized regressions performed in DuckDB are asserted to be within 10e-7 of Statsmodels._
 
 > _† Minimal support for Postgres. Postgres is syntactically supported, but is not performant under certain circumstances._
 
