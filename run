@@ -4,6 +4,7 @@ set -eo pipefail
 
 export DBT_PROFILES_DIR=./integration_tests/profiles
 export DBT_PROJECT_DIR=./integration_tests
+export DO_NOT_TRACK=1
 
 if [ -f .env ]; then
   # shellcheck disable=SC2002,SC2046
