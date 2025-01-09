@@ -385,9 +385,11 @@ def gen_hide_args_yaml(parse: bool) -> None:
         from dbt.cli.main import dbtRunner
         os.environ["DO_NOT_TRACK"] = "1"
         dbtRunner().invoke(
-            ["parse"],
-            profiles_dir=op.join(op.dirname(__file__), "integration_tests", "profiles"),
-            project_dir=op.dirname(__file__)
+            [
+                "parse",
+                "--profiles-dir", op.join(op.dirname(__file__), "integration_tests", "profiles"),
+                "--project-dir", op.dirname(__file__)
+            ]
         )
 
     exclude_from_hiding = ["ols"]
