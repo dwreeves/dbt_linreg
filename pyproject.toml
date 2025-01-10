@@ -1,8 +1,8 @@
 [project]
 name = "dbt_linreg"
 requires-python = "~=3.11"
-description = "dbt_pca dbt package"
-version = "0.3.0"
+description = "dbt_linreg dbt package"
+version = "0.3.1"
 readme = "README.md"
 authors = ["Daniel Reeves"]
 

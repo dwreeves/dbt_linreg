@@ -233,5 +233,5 @@ on
 {% endmacro %}
 
 {% macro _get_method_option(method, field, method_options, default=none) %}
-  {{ return(method_options.get(field, var("dbt_linreg", {}).get("method_options", {}).get("method", {}).get(field, default))) }}
+  {{ return(method_options.get(field, var("dbt_linreg", {}).get("method_options", {}).get(method, {}).get(field, default))) }}
 {% endmacro %}

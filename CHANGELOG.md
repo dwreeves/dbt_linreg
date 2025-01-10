@@ -1,5 +1,9 @@
 # Changelog
 
+### `0.3.1`
+
+- Fix bug in `vars:` implementation of method options.
+
 ### `0.3.0`
 
 - Official support for Clickhouse!
