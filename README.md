@@ -25,6 +25,8 @@ Reasons to use **dbt_linreg**:
 - 🤗 **User friendly:** The API provides comprehensive feedback on input errors.
 - 💪 **Durable and tested:** Everything in this code base is tested against equivalent regressions performed in Statsmodels with high precision assertions (between 10e-6 to 10e-7, depending on the database engine).
 
+_Note: If you enjoy this project, you may also enjoy my other dbt machine learning project, [**dbt_pca**](https://github.com/dwreeves/dbt_pca)._ 😊
+
 # Installation
 
 dbt-core `>=1.2.0` is required to install `dbt_linreg`.
