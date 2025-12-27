@@ -107,6 +107,12 @@ macros:
   - name: _cholesky_decomposition
     docs:
       show: false
+  - name: _combinations
+    docs:
+      show: false
+  - name: _combinations_with_replacement
+    docs:
+      show: false
   - name: _filter_and_center_if_alpha
     docs:
       show: false

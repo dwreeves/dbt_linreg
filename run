@@ -17,7 +17,7 @@ function dbt {
 
 function setup {
   uv sync --all-extras
-  uvx pre-commit install
+  uvx prek install
 }
 
 function docker-run-clickhouse {

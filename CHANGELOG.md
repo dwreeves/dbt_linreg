@@ -1,5 +1,9 @@
 # Changelog
 
+### `0.3.2`
+
+- Address deprecation of `modules.itertools`
+
 ### `0.3.1`
 
 - Fix bug in `vars:` implementation of method options.

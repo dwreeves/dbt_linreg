@@ -1,4 +1,78 @@
 {###############################################################################
+## Replacements for modules.itertools (deprecated in dbt-core >= 1.9)
+###############################################################################}
+
+{# itertools.combinations() #}
+{% macro _combinations(iterable, r) %}
+  {% set result = [] %}
+  {% set n = iterable | length %}
+  {% if r > n or r < 0 %}
+    {{ return(result) }}
+  {% endif %}
+  {% if r == 0 %}
+    {% do result.append(()) %}
+    {{ return(result) }}
+  {% endif %}
+  {% if r == 1 %}
+    {% for item in iterable %}
+      {% do result.append((item,)) %}
+    {% endfor %}
+    {{ return(result) }}
+  {% endif %}
+  {% if r == 2 %}
+    {% for i in range(n) %}
+      {% for j in range(i + 1, n) %}
+        {% do result.append((iterable[i], iterable[j])) %}
+      {% endfor %}
+    {% endfor %}
+    {{ return(result) }}
+  {% endif %}
+  {# recursive for r >= 3 #}
+  {% for i in range(n - r + 1) %}
+    {% set rest = dbt_linreg._combinations(iterable[i + 1:], r - 1) %}
+    {% for combo in rest %}
+      {% do result.append((iterable[i],) + combo) %}
+    {% endfor %}
+  {% endfor %}
+  {{ return(result) }}
+{% endmacro %}
+
+{# itertools.combinations_with_replacement() #}
+{% macro _combinations_with_replacement(iterable, r) %}
+  {% set result = [] %}
+  {% set n = iterable | length %}
+  {% if n == 0 and r > 0 %}
+    {{ return(result) }}
+  {% endif %}
+  {% if r == 0 %}
+    {% do result.append(()) %}
+    {{ return(result) }}
+  {% endif %}
+  {% if r == 1 %}
+    {% for item in iterable %}
+      {% do result.append((item,)) %}
+    {% endfor %}
+    {{ return(result) }}
+  {% endif %}
+  {% if r == 2 %}
+    {% for i in range(n) %}
+      {% for j in range(i, n) %}
+        {% do result.append((iterable[i], iterable[j])) %}
+      {% endfor %}
+    {% endfor %}
+    {{ return(result) }}
+  {% endif %}
+  {# recursive for r >= 3 #}
+  {% for i in range(n) %}
+    {% set rest = dbt_linreg._combinations_with_replacement(iterable[i:], r - 1) %}
+    {% for combo in rest %}
+      {% do result.append((iterable[i],) + combo) %}
+    {% endfor %}
+  {% endfor %}
+  {{ return(result) }}
+{% endmacro %}
+
+{###############################################################################
 ## Simple univariate regression.
 ###############################################################################}
 

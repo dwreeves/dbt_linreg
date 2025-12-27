@@ -86,7 +86,7 @@
 
 {% macro _forward_substitution(li, safe=true, isa=none) %}
   {% set d = {} %}
-  {% for i, j in modules.itertools.combinations_with_replacement(li, 2) %}
+  {% for i, j in dbt_linreg._combinations_with_replacement(li, 2) %}
     {% set ns = namespace() %}
     {% if i == j %}
       {% set ns.numerator = '1' %}
@@ -165,7 +165,7 @@ _dbt_linreg_base as (
 _dbt_linreg_xtx as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
-    {%- for i, j in modules.itertools.combinations_with_replacement(xcols, 2) %}
+    {%- for i, j in dbt_linreg._combinations_with_replacement(xcols, 2) %}
     {%- if alpha and i == j and i > 0 %}
     sum(b.x{{ i }} * b.x{{ j }} + {{ alpha[i-1] }}) as x{{ i }}x{{ j }}
     {%- else %}
@@ -246,7 +246,7 @@ _dbt_linreg_inverse_chol as (
 _dbt_linreg_inverse_xtx as (
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
-    {%- for i, j in modules.itertools.combinations_with_replacement(xcols, 2) %}
+    {%- for i, j in dbt_linreg._combinations_with_replacement(xcols, 2) %}
     {%- if not add_constant %}
       {%- set upto = upto + 1 %}
     {%- endif %}
