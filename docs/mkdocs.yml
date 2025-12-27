@@ -7,6 +7,7 @@ repo_name: dbt_linreg
 docs_dir: src
 nav:
 - Home: index.md
+
 theme:
   name: material
   palette:
@@ -49,5 +50,3 @@ extra:
       link: https://github.com/dwreeves/dbt_linreg
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/daniel-reeves-27700545/
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/mueblesfeos

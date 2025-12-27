@@ -1,6 +1,7 @@
 {% macro _ols_1var(table,
                    endog,
                    exog,
+                   weights=None,
                    add_constant=True,
                    output=None,
                    output_options=None,
