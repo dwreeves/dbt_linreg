@@ -19,7 +19,8 @@ expected as (
 
 )
 
-select base.variable_name
+select
+  coalesce(base.variable_name, expected.variable_name) as variable_name
 from {{ ref('collinear_matrix_ridge_regression_fwl') }} as base
 full outer join expected
 on base.variable_name = expected.variable_name

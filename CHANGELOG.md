@@ -1,5 +1,23 @@
 # Changelog
 
+### `0.3.2`
+
+- Address deprecation of `modules.itertools`
+
+### `0.3.1`
+
+- Fix bug in `vars:` implementation of method options.
+
+### `0.3.0`
+
+- Official support for Clickhouse!
+- Rename `format=` and `format_options=` to `output=` and `output_options=` to make the API consistent with **dbt_pca**.
+- Allow for setting method and output options globally with `vars:`
+
+### `0.2.6`
+
+- Fix bug with `group_by` on multiple variables; contributed by [@svkohler](https://github.com/dwreeves/dbt_linreg/issues/21).
+
 ### `0.2.5`
 
 - Fix bug where `exog` and `group_by` did not handle `str` inputs e.g. `exog="x"`.

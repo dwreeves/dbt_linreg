@@ -3,6 +3,7 @@ This file is used for generation of CSV files for integration test cases,
 and also for manual verification + generation of test case values.
 """
 import json
+import os
 import os.path as op
 import warnings
 from typing import NamedTuple
@@ -22,6 +23,9 @@ warnings.simplefilter("ignore", category=FutureWarning)
 
 # No scientific notation
 np.set_printoptions(suppress=True)
+
+
+click.rich_click.THEME = "nord-box"
 
 
 DIR = op.dirname(__file__)
@@ -378,7 +382,8 @@ def gen_test_cases(tables: list[str], size: int, seed: int, skip_if_exists: bool
 
 
 @cli.command("gen-hide-macros-yaml")
-def gen_hide_args_yaml():
+@click.option("--parse/--no-parse", is_flag=True, default=True)
+def gen_hide_args_yaml(parse: bool) -> None:
     """Generates the YAML that hides the macros from the docs.
 
     Requires the `manifest.json` to be available.
@@ -388,6 +393,18 @@ def gen_hide_args_yaml():
 
     This is not enforced during CICD, beware!
     """
+
+    if parse:
+        from dbt.cli.main import dbtRunner
+        os.environ["DO_NOT_TRACK"] = "1"
+        dbtRunner().invoke(
+            [
+                "parse",
+                "--profiles-dir", op.join(op.dirname(__file__), "integration_tests", "profiles"),
+                "--project-dir", op.dirname(__file__)
+            ]
+        )
+
     exclude_from_hiding = ["ols"]
     with open("target/manifest.json") as f:
         manifest = json.load(f)

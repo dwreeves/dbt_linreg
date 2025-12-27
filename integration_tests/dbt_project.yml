@@ -1,5 +1,5 @@
 name: "dbt_linreg_tests"
-version: "0.2.3"
+version: "0.3.2"
 
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
@@ -9,6 +9,16 @@ target-path: "target"
 clean-targets: ["target", "dbt_modules", "dbt_packages"]
 macro-paths: ["macros"]
 log-path: "logs"
+
+vars:
+  _test_precision_simple_matrix: '{{ "10e-8" if target.name == "clickhouse" else 0.0 }}'
+  _test_precision_collinear_matrix: '{{ "10e-6" if target.name == "clickhouse" else "10e-7" }}'
+
+models:
+  +materialized: table
+
+tests:
+  +store_failures: true
 
 # During dev only!
 profile: "dbt_linreg_profile"

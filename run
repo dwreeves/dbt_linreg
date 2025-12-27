@@ -2,56 +2,65 @@
 
 set -eo pipefail
 
+export DBT_PROFILES_DIR=./integration_tests/profiles
+export DBT_PROJECT_DIR=./integration_tests
+export DO_NOT_TRACK=1
+
 if [ -f .env ]; then
   # shellcheck disable=SC2002,SC2046
   export $(cat .env | xargs)
 fi
 
+function dbt {
+  uv run dbt "${@}"
+}
+
 function setup {
-  poetry install
-  poetry run pre-commit install
+  uv sync --all-extras
+  uvx prek install
+}
+
+function docker-run-clickhouse {
+    docker run \
+      -d \
+      -p 8123:8123 \
+      --name dbt-linreg-clickhouse \
+      --ulimit nofile=262144:262144 \
+      clickhouse/clickhouse-server
 }
 
 function test {
-  local target="${1-"dbt-duckdb"}"
+  local target="${1-"duckdb"}"
 
-  if [ -z "${GITHUB_ACTIONS}" ] && [ "${target}" = "dbt-postgres" ];
+  if [ -z "${GITHUB_ACTIONS}" ] && [ "${target}" = "postgres" ];
   then
     createdb "${POSTGRES_DB-"dbt_linreg"}" || true
   fi
 
-  if [ -z "${GITHUB_ACTIONS}" ] && [ "${target}" = "dbt-duckdb" ];
+  if [ "${target}" = "clickhouse" ];
+  then
+    docker-run-clickhouse || true
+  fi
+
+  if [ -z "${GITHUB_ACTIONS}" ] && [ "${target}" = "duckdb" ];
   then
     rm -f dbt.duckdb
   fi
 
-  poetry run python scripts.py gen-test-cases --skip-if-exists
-  poetry run dbt deps \
-    --project-dir ./integration_tests \
-    --profiles-dir ./integration_tests/profiles \
-    --target "${target}"
-  poetry run dbt seed \
-    --project-dir ./integration_tests \
-    --profiles-dir ./integration_tests/profiles \
-    --target "${target}"
-  poetry run dbt run \
-    --project-dir ./integration_tests \
-    --profiles-dir ./integration_tests/profiles \
-    --target "${target}" \
-    --selector "${target}-selector"
-  poetry run dbt test \
-    --project-dir ./integration_tests \
-    --profiles-dir ./integration_tests/profiles \
-    --target "${target}" \
-    --selector "${target}-selector"
+  uv run scripts.py gen-test-cases
+  dbt deps --target "${target}"
+  dbt seed --target "${target}"
+  dbt run --target "${target}" --selector "${target}-selector"
+  dbt test --target "${target}" --selector "${target}-selector"  --store-failures
 }
 
 function lint {
-  poetry run pre-commit run -a
+  uv run pre-commit run -a
 }
 
 function docs:deploy {
-  mkdocs gh-deploy -f docs/mkdocs.yml
+  # shellcheck disable=SC2046
+  uv run $(xargs -I{} echo --with {} < docs/requirements.txt) mkdocs gh-deploy -f docs/mkdocs.yml
 }
 
 function help {

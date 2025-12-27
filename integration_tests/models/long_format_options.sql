@@ -10,8 +10,8 @@ select
       table=ref('simple_matrix'),
       endog='y',
       exog=['"xa"', 'xb'],
-      format='long',
-      format_options={
+      output='long',
+      output_options={
         'constant_name': 'constant_term',
         'variable_column_name': 'vname',
         'coefficient_column_name': 'co',
@@ -29,8 +29,8 @@ select
       table=ref('simple_matrix'),
       endog='y',
       exog=['"xa"', 'xb'],
-      format='long',
-      format_options={
+      output='long',
+      output_options={
         'constant_name': 'constant_term',
         'variable_column_name': 'vname',
         'coefficient_column_name': 'co',

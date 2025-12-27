@@ -21,8 +21,8 @@ macros:
           table=ref('simple_matrix'),
           endog='y',
           exog=['xa', 'xb', 'xc'],
-          format='long',
-          format_options={'round': 5}
+          output='long',
+          output_options={'round': 5}
         )
       }}
       ```
@@ -45,8 +45,8 @@ macros:
           table='my_data',
           endog='y',
           exog=['xa', 'xb', 'xc'],
-          format='long',
-          format_options={'round': 5}
+          output='long',
+          output_options={'round': 5}
         )
       }}
       ```
@@ -68,15 +68,15 @@ macros:
       - name: add_constant
         type: boolean
         description: 'If true, a constant term is added automatically to the regression. (Default: `true`)'
-      - name: format
+      - name: output
         type: string
         description: |-
           Either "wide" or "long" format for coefficients. See **Formats and format options** in the README for more.
           - If `wide`, the variables span the columns with their original variable names, and the coefficients fill a single row.
           - If `long`, the coefficients are in a single column called `coefficient`, and the variable names are in a single column called `variable_name`.
-      - name: format_options
+      - name: output_options
         type: dict
-        description: See **Formats and format options** section in the README for more.
+        description: See **Outputs and output options** section in the README for more.
       - name: group_by
         type: string or list of numbers
         description: If specified, the regression will be grouped by these variables, and individual regressions will run on each group.
@@ -107,6 +107,12 @@ macros:
   - name: _cholesky_decomposition
     docs:
       show: false
+  - name: _combinations
+    docs:
+      show: false
+  - name: _combinations_with_replacement
+    docs:
+      show: false
   - name: _filter_and_center_if_alpha
     docs:
       show: false
@@ -120,6 +126,12 @@ macros:
     docs:
       show: false
   - name: _gb_cols
+    docs:
+      show: false
+  - name: _get_method_option
+    docs:
+      show: false
+  - name: _get_output_option
     docs:
       show: false
   - name: _join_on_groups
@@ -165,6 +177,9 @@ macros:
     docs:
       show: false
   - name: bigquery___safe_sqrt
+    docs:
+      show: false
+  - name: clickhouse___cell_or_alias
     docs:
       show: false
   - name: default___cell_or_alias

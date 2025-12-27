@@ -1,7 +1,7 @@
 selectors:
-  - name: dbt-duckdb-selector
+  - name: duckdb-selector
     definition: 'fqn:*'
-  - name: dbt-postgres-selector
+  - name: postgres-selector
     # Postgres runs into memory / performance issues for some of these queries.
     # Resolving this and making Postgres more performant is a TODO.
     definition:
@@ -9,3 +9,10 @@ selectors:
       - 'fqn:*'
       - exclude:
         - '@tag:skip-postgres'
+  - name: clickhouse-selector
+    # Clickhouse struggles with the unoptimized chol method.
+    definition:
+      union:
+      - 'fqn:*'
+      - exclude:
+        - '@tag:skip-clickhouse'

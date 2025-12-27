@@ -10,7 +10,7 @@ select * from {{
     endog='y',
     exog=['x1', 'x2', 'x3', 'x4', 'x5'],
     alpha=1.0,
-    format='long',
-    add_constant=False
+    output='long',
+    add_constant=false
   )
 }} as linreg

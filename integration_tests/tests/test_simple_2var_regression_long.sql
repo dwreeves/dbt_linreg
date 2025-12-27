@@ -10,8 +10,13 @@ expected as (
 
 )
 
-select base.variable_name
+select
+  coalesce(base.variable_name, expected.variable_name) as variable_name,
+  expected.coefficient as expected_coefficient,
+  base.coefficient as actual_coefficient
 from {{ ref('simple_2var_regression_long') }} as base
 full outer join expected
 on base.variable_name = expected.variable_name
-where base.coefficient != expected.coefficient or base.coefficient is null
+where
+  abs(base.coefficient - expected.coefficient) > {{ var("_test_precision_simple_matrix") }}
+  or base.coefficient is null

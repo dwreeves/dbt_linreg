@@ -7,17 +7,37 @@ on:
     branches:
     - main
 jobs:
-  pre-commit:
+  prek:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions/setup-python@v4
-    - uses: pre-commit/action@v3.0.0
+    - uses: j178/prek-action@v1
   integration-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dbt_core: [1.6.*, 1.8.*, 1.11.*]
+        db_target: [duckdb, postgres, clickhouse]
     services:
+      clickhouse:
+        image: ${{ (matrix.db_target == 'clickhouse') && 'clickhouse/clickhouse-server:latest' || '' }}
+        env:
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+          CLICKHOUSE_PASSWORD: dbt_user_password
+          CLICKHOUSE_USER: dbt_user
+          CLICKHOUSE_DB: default
+        ports:
+          - 8123:8123
+          - 9000:9000
+        options: >-
+          --ulimit nofile=262144:262144
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       postgres:
-        image: postgres
+        image: ${{ (matrix.db_target == 'postgres') && 'postgres' || '' }}
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -29,34 +49,31 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    strategy:
-      matrix:
-        dbt_core: [1.4.*, 1.7.*]
-        db_target: [dbt-duckdb, dbt-postgres]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.10"
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.4.0
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-      - name: Install dependencies
+          python-version: 3.11
+          activate-environment: true
+      - name: Setup
         run: |
           sudo apt-get update
           sudo apt-get install
           chmod +x ./run
-          ./run setup
-          pip install -U "dbt-core==$DBT_CORE_VERSION" "${DBT_PROVIDER_PACKAGE}"
+          uv venv
+          uv sync --extra python-dev
+          uv pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-${DBT_TARGET}"
         env:
+          UV_NO_SYNC: true
+          DO_NOT_TRACK: 1
           DBT_CORE_VERSION: ${{ matrix.dbt_core }}
-          DBT_PROVIDER_PACKAGE: ${{ matrix.db_target }}
+          DBT_TARGET: ${{ matrix.db_target }}
       - name: Test
         run: ./run test "${DBT_TARGET}"
         env:
+          UV_NO_SYNC: true
+          DO_NOT_TRACK: 1
           DBT_TARGET: ${{ matrix.db_target }}
           POSTGRES_HOST: localhost
           POSTGRES_USER: postgres
