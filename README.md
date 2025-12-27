@@ -35,7 +35,7 @@ Add this the `packages:` list your dbt project's `packages.yml`:
 
 ```yaml
   - package: "dwreeves/dbt_linreg"
-    version: "0.3.1"
+    version: "0.3.2"
 ```
 
 The full file will look something like this:
@@ -46,7 +46,7 @@ packages:
   # Other packages here
   # ...
   - package: "dwreeves/dbt_linreg"
-    version: "0.3.1"
+    version: "0.3.2"
 ```
 
 # Examples

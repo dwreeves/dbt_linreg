@@ -6,7 +6,7 @@
       {%- if i != j %}
       {%- do remaining.remove(i) %}
       {%- do remaining.remove(j) %}
-      {%- set comb = modules.itertools.combinations(remaining, step - 1) %}
+      {%- set comb = dbt_linreg._combinations(remaining, step - 1) %}
       {%- for c in comb %}
         {%- do li.append((i, j, c)) %}
       {%- endfor %}
@@ -21,14 +21,14 @@
   {%- for i in x %}
     {%- set remaining = x.copy() %}
     {%- do remaining.remove(i) %}
-    {%- set comb = modules.itertools.combinations(remaining, step) %}
+    {%- set comb = dbt_linreg._combinations(remaining, step) %}
     {%- for c in comb %}
       {%- set ortho = [] %}
       {%- if c %}
         {%- for b in c %}
           {%- set _c = (c | list) %}
           {%- do _c.remove(b) %}
-          {%- do ortho.append([b] + (modules.itertools.combinations(_c, step - 1) | list)) %}
+          {%- do ortho.append([b] + (dbt_linreg._combinations(_c, step - 1) | list)) %}
         {%- endfor %}
       {%- endif %}
       {%- do li.append((i, ortho)) %}

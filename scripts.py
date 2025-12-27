@@ -25,6 +25,9 @@ warnings.simplefilter("ignore", category=FutureWarning)
 np.set_printoptions(suppress=True)
 
 
+click.rich_click.THEME = "nord-box"
+
+
 DIR = op.dirname(__file__)
 
 DEFAULT_SIZE = 10_000
