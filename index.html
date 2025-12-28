@@ -1,0 +1,733 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Docs for dbt_linreg">
+      
+      
+        <meta name="author" content="Daniel Reeves">
+      
+      
+        <link rel="canonical" href="https://dwreeves.github.io/dbt_linreg/">
+      
+      
+      
+      <link rel="icon" href="img/dbt-linreg-favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.6">
+    
+    
+      
+        <title>dbt_linreg</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.558e4712.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.2505c338.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Opens+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Opens Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="css/extra.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="light-blue">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="dbt_linreg" class="md-header__button md-logo" aria-label="dbt_linreg" data-md-component="logo">
+      
+  <img src="img/dbt-linreg-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            dbt_linreg
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5Z"/></svg>
+            </label>
+          
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dwreeves/dbt_linreg/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dbt_linreg
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="dbt_linreg" class="md-nav__button md-logo" aria-label="dbt_linreg" data-md-component="logo">
+      
+  <img src="img/dbt-linreg-logo.png" alt="logo">
+
+    </a>
+    dbt_linreg
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dwreeves/dbt_linreg/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dbt_linreg
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        Home
+      </a>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+
+<p align="center">
+<img src="img/dbt-linreg-banner-light.png#only-light" align="center">
+<img src="img/dbt-linreg-banner-dark.png#only-dark" align="center">
+</p>
+
+<p align="center">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-dark.png#readme-logo">
+        <img src="https://raw.githubusercontent.com/dwreeves/dbt_linreg/main/docs/src/img/dbt-linreg-banner-light.png#readme-logo" alt="dbt_linreg logo">
+    </picture>
+</p>
+<p align="center">
+    <em>Linear regression in any SQL dialect, powered by dbt.</em>
+</p>
+<p align="center">
+    <img src="https://github.com/dwreeves/dbt_linreg/workflows/tests/badge.svg" alt="Tests badge">
+    <img src="https://github.com/dwreeves/dbt_linreg/workflows/docs/badge.svg" alt="Docs badge">
+</p>
+
+<h1 id="overview">Overview</h1>
+<p><strong>dbt_linreg</strong> is an easy way to perform linear regression and ridge regression in SQL (Snowflake, DuckDB, Clickhouse, and more) with OLS using dbt's Jinja2 templating.</p>
+<p>Reasons to use <strong>dbt_linreg</strong>:</p>
+<ul>
+<li>📈 <strong>Linear regression in pure SQL:</strong> With the power of Jinja2 templating and some behind-the-scenes math tricks, it is possible to implement multiple and multivariate regression in pure SQL. Most SQL engines (even OLAP engines) do not have a multiple regression implementation of OLS, so this fills a valuable niche. <strong><code>dbt_linreg</code> implements true OLS, not an approximation!</strong></li>
+<li>📱 <strong>Simple interface:</strong> Just define a <code>table=</code> (which works with <code>ref()</code>, <code>source()</code>, and CTEs), a y-variable with <code>endog=</code>, your x-variables in a list with <code>exog=...</code>, and you're all set! Note that the API is loosely based on Statsmodels's naming conventions.</li>
+<li>🤖 <strong>Support for ridge regression:</strong> Just pass in <code>alpha=scalar</code> or <code>alpha=[scalar1, scalar2, ...]</code> to regularize your regressions. (Note: regressors are not automatically standardized.)</li>
+<li>🤸‍ <strong>Flexibility:</strong> Tons of formatting options available to return coefficients the way you want.</li>
+<li>🤗 <strong>User friendly:</strong> The API provides comprehensive feedback on input errors.</li>
+<li>💪 <strong>Durable and tested:</strong> Everything in this code base is tested against equivalent regressions performed in Statsmodels with high precision assertions (between 10e-6 to 10e-7, depending on the database engine).</li>
+</ul>
+<p><em>Note: If you enjoy this project, you may also enjoy my other dbt machine learning project, <a href="https://github.com/dwreeves/dbt_pca"><strong>dbt_pca</strong></a>.</em> 😊</p>
+<h1 id="installation">Installation</h1>
+<p>dbt-core <code>&gt;=1.2.0</code> is required to install <code>dbt_linreg</code>.</p>
+<p>Add this the <code>packages:</code> list your dbt project's <code>packages.yml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">package</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dwreeves/dbt_linreg&quot;</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.3.2&quot;</span>
+</code></pre></div>
+<p>The full file will look something like this:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">packages</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="c1"># Other packages here</span>
+<span class="w">  </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">package</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dwreeves/dbt_linreg&quot;</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.3.2&quot;</span>
+</code></pre></div>
+<h1 id="examples">Examples</h1>
+<h3 id="simple-example">Simple example</h3>
+<p>The following example runs a linear regression of 3 columns <code>xa + xb + xc</code> on <code>y</code>, using data in the dbt model named <code>simple_matrix</code>. It outputs the data in "long" format, and rounds the coefficients to 5 decimal points:</p>
+<div class="highlight"><pre><span></span><code><span class="err">{{</span>
+<span class="w">  </span><span class="n">config</span><span class="p">(</span>
+<span class="w">    </span><span class="n">materialized</span><span class="o">=</span><span class="ss">&quot;table&quot;</span>
+<span class="w">  </span><span class="p">)</span>
+<span class="err">}}</span>
+<span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="err">{{</span>
+<span class="w">  </span><span class="n">dbt_linreg</span><span class="p">.</span><span class="n">ols</span><span class="p">(</span>
+<span class="w">    </span><span class="k">table</span><span class="o">=</span><span class="k">ref</span><span class="p">(</span><span class="s1">&#39;simple_matrix&#39;</span><span class="p">),</span>
+<span class="w">    </span><span class="n">endog</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">exog</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;xa&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;xb&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;xc&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="k">output</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">output_options</span><span class="o">=</span><span class="err">{</span><span class="s1">&#39;round&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="err">}</span>
+<span class="w">  </span><span class="p">)</span>
+<span class="err">}}</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">linreg</span>
+</code></pre></div>
+<p>Output:</p>
+<table>
+<thead>
+<tr>
+<th>variable_name</th>
+<th>coefficient</th>
+<th>standard_error</th>
+<th>t_statistic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>const</td>
+<td>10.0</td>
+<td>0.00462</td>
+<td>2163.27883</td>
+</tr>
+<tr>
+<td>xa</td>
+<td>5.0</td>
+<td>0.46226</td>
+<td>10.81639</td>
+</tr>
+<tr>
+<td>xb</td>
+<td>7.0</td>
+<td>0.46226</td>
+<td>15.14295</td>
+</tr>
+<tr>
+<td>xc</td>
+<td>9.0</td>
+<td>0.46226</td>
+<td>19.46951</td>
+</tr>
+</tbody>
+</table>
+<p>Note: <code>simple_matrix</code> is one of the test cases, so you can try this yourself! Standard errors are constant across <code>xa</code>, <code>xb</code>, <code>xc</code>, because <code>simple_matrix</code> is orthonormal.</p>
+<h3 id="complex-example">Complex example</h3>
+<p>The following hypothetical example shows multiple ridge regressions (one per <code>product_id</code>) on a table that is preprocessed substantially. After the fact, predictions are run, and the R-squared of each regression is calculated at the end.</p>
+<p>This example shows that, although <code>dbt_linreg</code> does not implement everything for you, the OLS implementation does most of the hard work. This gives you the freedom to do things you've never been able to do before in SQL!</p>
+<div class="highlight"><pre><span></span><code><span class="err">{{</span>
+<span class="w">  </span><span class="n">config</span><span class="p">(</span>
+<span class="w">    </span><span class="n">materialized</span><span class="o">=</span><span class="ss">&quot;table&quot;</span>
+<span class="w">  </span><span class="p">)</span>
+<span class="err">}}</span>
+<span class="k">with</span>
+
+<span class="n">preprocessed_data</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="p">(</span>
+
+<span class="w">  </span><span class="k">select</span>
+<span class="w">    </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">price</span><span class="p">,</span>
+<span class="w">    </span><span class="n">log</span><span class="p">(</span><span class="n">price</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">log_price</span><span class="p">,</span>
+<span class="w">    </span><span class="n">epoch</span><span class="p">(</span><span class="k">time</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">t</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sin</span><span class="p">(</span><span class="n">epoch</span><span class="p">(</span><span class="k">time</span><span class="p">)</span><span class="o">*</span><span class="n">pi</span><span class="p">()</span><span class="o">*</span><span class="mi">2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">365</span><span class="p">))</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">sin_t</span><span class="p">,</span>
+<span class="w">    </span><span class="n">cos</span><span class="p">(</span><span class="n">epoch</span><span class="p">(</span><span class="k">time</span><span class="p">)</span><span class="o">*</span><span class="n">pi</span><span class="p">()</span><span class="o">*</span><span class="mi">2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">365</span><span class="p">))</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">cos_t</span>
+<span class="w">  </span><span class="k">from</span>
+<span class="w">    </span><span class="err">{{</span><span class="w"> </span><span class="k">ref</span><span class="p">(</span><span class="s1">&#39;prices&#39;</span><span class="p">)</span><span class="w"> </span><span class="err">}}</span>
+
+<span class="p">),</span>
+
+<span class="n">preprocessed_and_normalized_data</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="p">(</span>
+
+<span class="w">  </span><span class="k">select</span>
+<span class="w">    </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">price</span><span class="p">,</span>
+<span class="w">    </span><span class="n">log</span><span class="p">(</span><span class="n">price</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">log_price</span><span class="p">,</span>
+<span class="w">    </span><span class="p">(</span><span class="k">time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="k">avg</span><span class="p">(</span><span class="k">time</span><span class="p">)</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">stddev</span><span class="p">(</span><span class="k">time</span><span class="p">)</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">t_norm</span><span class="p">,</span>
+<span class="w">    </span><span class="p">(</span><span class="n">sin_t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="k">avg</span><span class="p">(</span><span class="n">sin_t</span><span class="p">)</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">stddev</span><span class="p">(</span><span class="n">sin_t</span><span class="p">)</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">sin_t_norm</span><span class="p">,</span>
+<span class="w">    </span><span class="p">(</span><span class="n">cos_t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="k">avg</span><span class="p">(</span><span class="n">cos_t</span><span class="p">)</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">stddev</span><span class="p">(</span><span class="n">cos_t</span><span class="p">)</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">cos_t_norm</span>
+<span class="w">  </span><span class="k">from</span>
+<span class="w">    </span><span class="n">preprocessed_data</span>
+
+<span class="p">),</span>
+
+<span class="n">coefficients</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="p">(</span>
+
+<span class="w">    </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="err">{{</span>
+<span class="w">      </span><span class="n">dbt_linreg</span><span class="p">.</span><span class="n">ols</span><span class="p">(</span>
+<span class="w">        </span><span class="k">table</span><span class="o">=</span><span class="s1">&#39;preprocessed_and_normalized_data&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">endog</span><span class="o">=</span><span class="s1">&#39;log_price&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">exog</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t_norm&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;sin_t_norm&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cos_t_norm&#39;</span><span class="p">],</span>
+<span class="w">        </span><span class="n">group_by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;product_id&#39;</span><span class="p">],</span>
+<span class="w">        </span><span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">.</span><span class="mi">0001</span>
+<span class="w">      </span><span class="p">)</span>
+<span class="w">    </span><span class="err">}}</span>
+
+<span class="p">),</span>
+
+<span class="n">predict</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="p">(</span>
+
+<span class="w">  </span><span class="k">select</span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="k">time</span><span class="p">,</span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="n">price</span><span class="p">,</span>
+<span class="w">    </span><span class="n">exp</span><span class="p">(</span>
+<span class="w">      </span><span class="k">c</span><span class="p">.</span><span class="n">const</span>
+<span class="w">      </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">t_norm</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="n">t_norm</span>
+<span class="w">      </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">sin_t_norm</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="n">sin_t_norm</span>
+<span class="w">      </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">cos_t_norm</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin_t_norm</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">predicted_price</span>
+<span class="w">  </span><span class="k">from</span>
+<span class="w">    </span><span class="n">preprocessed_and_normalized_data</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">d</span>
+<span class="w">  </span><span class="k">join</span>
+<span class="w">    </span><span class="n">coefficients</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="k">c</span>
+<span class="w">  </span><span class="k">on</span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="n">product_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="n">product_id</span>
+
+<span class="p">)</span>
+
+<span class="k">select</span>
+<span class="w">  </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">pow</span><span class="p">(</span><span class="n">corr</span><span class="p">(</span><span class="n">predicted_price</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">r_squared</span>
+<span class="k">from</span>
+<span class="w">  </span><span class="n">predict</span>
+<span class="k">group</span><span class="w"> </span><span class="k">by</span>
+<span class="w">  </span><span class="n">product_id</span>
+</code></pre></div>
+<h1 id="supported-databases">Supported Databases</h1>
+<p><strong>dbt_linreg</strong> should work with most SQL databases, but so far, testing has been done for the following database tools:</p>
+<table>
+<thead>
+<tr>
+<th>Database</th>
+<th>Supported</th>
+<th>Precision asserted in CI*</th>
+<th>Supported since version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Snowflake</strong></td>
+<td>✅</td>
+<td><em>n/a</em></td>
+<td>0.1.0</td>
+</tr>
+<tr>
+<td><strong>DuckDB</strong></td>
+<td>✅</td>
+<td>10e-7</td>
+<td>0.1.0</td>
+</tr>
+<tr>
+<td><strong>Postgres</strong>†</td>
+<td>✅</td>
+<td>10e-7</td>
+<td>0.2.3</td>
+</tr>
+<tr>
+<td><strong>Redshift</strong></td>
+<td>✅</td>
+<td><em>n/a</em></td>
+<td>0.2.4</td>
+</tr>
+<tr>
+<td><strong>Clickhouse</strong></td>
+<td>✅</td>
+<td>10e-6</td>
+<td>0.3.0</td>
+</tr>
+</tbody>
+</table>
+<p>If <strong>dbt_linreg</strong> does not work in your database tool, please let me know in a bug report.</p>
+<blockquote>
+<p><em>* Precision is for test cases using the <strong>collinear_matrix</strong> for unregularized regressions, in comparison to the output of the same regression in the Python package Statsmodels using <code>sm.OLS().fit(method="pinv")</code>. For example, coefficients for unregularized regressions performed in DuckDB are asserted to be within 10e-7 of Statsmodels.</em></p>
+<p><em>† Minimal support for Postgres. Postgres is syntactically supported, but is not performant under certain circumstances.</em></p>
+</blockquote>
+<h1 id="api">API</h1>
+<p>The only function available in the public API is the <code>dbt_linreg.ols()</code> macro.</p>
+<p>Using Python typing notation, the full API for <code>dbt_linreg.ols()</code> looks like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">ols</span><span class="p">(</span>
+    <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">endog</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">exog</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="n">add_constant</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">output</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;wide&#39;</span><span class="p">,</span> <span class="s1">&#39;long&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;wide&#39;</span><span class="p">,</span>
+    <span class="n">output_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">group_by</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;chol&#39;</span><span class="p">,</span> <span class="s1">&#39;fwl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;chol&#39;</span><span class="p">,</span>
+    <span class="n">method_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>Where:</p>
+<ul>
+<li><strong>table</strong>: Name of table or CTE to pull the data from. You can use <code>ref()</code> or <code>source()</code> here if you'd like.</li>
+<li><strong>endog</strong>: The endogenous variable / y variable / target variable of the regression. (You can also specify <code>y=...</code> instead of <code>endog=...</code> if you prefer.)</li>
+<li><strong>exog</strong>: The exogenous variables / X variables / features of the regression. (You can also specify <code>x=...</code> instead of <code>exog=...</code> if you prefer.)</li>
+<li><strong>add_constant</strong>: If true, a constant term is added automatically to the regression.</li>
+<li><strong>output</strong>: Either "wide" or "long" output format for coefficients. See <strong>Outputs and output options</strong> for more.</li>
+<li>If <code>wide</code>, the variables span the columns with their original variable names, and the coefficients fill a single row.</li>
+<li>If <code>long</code>, the coefficients are in a single column called <code>coefficient</code>, and the variable names are in a single column called <code>variable_name</code>.</li>
+<li><strong>output_options</strong>: See <strong>Formats and format options</strong> section for more.</li>
+<li><strong>group_by</strong>: If specified, the regression will be grouped by these variables, and individual regressions will run on each group.</li>
+<li><strong>alpha</strong>: If not null, the regression will be run as a ridge regression with a penalty of <code>alpha</code>. See <strong>Notes</strong> section for more information.</li>
+<li><strong>method</strong>: The method used to calculate the regression. See <strong>Methods and method options</strong> for more.</li>
+<li><strong>method_options</strong>: Options specific to the estimation method. See <strong>Methods and method options</strong> for more.</li>
+</ul>
+<h1 id="outputs-and-output-options">Outputs and output options</h1>
+<p>Outputs can be returned either in <code>output='long'</code> or <code>output='wide'</code>.</p>
+<p>All outputs have their own output options, which can be passed into the <code>output_options=</code> arg as a dict, e.g. <code>output_options={'foo': 'bar'}</code>.</p>
+<p><code>output=</code> and <code>output_options=</code> were formerly named <code>format=</code> and <code>format_options=</code> respectively.
+This has been deprecated to make <strong>dbt_linreg</strong>'s API more consistent with <strong>dbt_pca</strong>'s API.</p>
+<h3 id="options-for-outputlong">Options for <code>output='long'</code></h3>
+<ul>
+<li><strong>round</strong> (<code>int</code>; default = <code>None</code>): If not None, round all coefficients to <code>round</code> number of digits.</li>
+<li><strong>constant_name</strong> (<code>string</code>; default = <code>'const'</code>): String name that refers to constant term.</li>
+<li><strong>variable_column_name</strong> (<code>string</code>; default = <code>'variable_name'</code>): Column name storing strings of variable names.</li>
+<li><strong>coefficient_column_name</strong> (<code>string</code>; default = <code>'coefficient'</code>): Column name storing model coefficients.</li>
+<li><strong>strip_quotes</strong> (<code>bool</code>; default = <code>True</code>): If true, strip outer quotes from column names if provided; if false, always use string literals.</li>
+</ul>
+<p>These options are available for <code>output='long'</code> only when <code>method='chol'</code>:</p>
+<ul>
+<li><strong>calculate_standard_error</strong> (<code>bool</code>; default = <code>True if not alpha else False</code>): If true, provide the standard error in the output.</li>
+<li><strong>standard_error_column_name</strong> (<code>string</code>; default = <code>'standard_error'</code>): Column name storing the standard error for the parameter.</li>
+<li><strong>t_statistic_column_name</strong> (<code>string</code>; default = <code>'t_statistic'</code>): Column name storing the t-statistic for the parameter.</li>
+</ul>
+<h3 id="options-for-outputwide">Options for <code>output='wide'</code></h3>
+<ul>
+<li><strong>round</strong> (<code>int</code>; default = <code>None</code>): If not None, round all coefficients to <code>round</code> number of digits.</li>
+<li><strong>constant_name</strong> (<code>string</code>; default = <code>'const'</code>): String name that refers to constant term.</li>
+<li><strong>variable_column_prefix</strong> (<code>string</code>; default = <code>None</code>): If not None, prefix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)</li>
+<li><strong>variable_column_suffix</strong> (<code>string</code>; default = <code>None</code>): If not None, suffix all variable columns with this. (Does NOT delimit, so make sure to include your own underscore if you'd want that.)</li>
+</ul>
+<h2 id="setting-output-options-globally">Setting output options globally</h2>
+<p>Output options can be set globally via <code>vars</code>, e.g. in your <code>dbt_project.yml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># dbt_project.yml</span>
+<span class="nt">vars</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dbt_linreg</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">output_options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">round</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</code></pre></div>
+<p>Output options passed via <code>ols()</code> always take precedence over globally set output options.</p>
+<h1 id="methods-and-method-options">Methods and method options</h1>
+<p>There are currently two valid methods for calculating regression coefficients:</p>
+<ul>
+<li><code>chol</code>: Uses Cholesky decomposition to calculate the pseudo-inverse.</li>
+<li><code>fwl</code>: Uses a "Frisch-Waugh-Lovell" approach, which consists of calculating univariate regressions to get multiple regression coefficients.</li>
+</ul>
+<h2 id="chol-method"><code>chol</code> method</h2>
+<p><strong>👍 This is the suggested method (and the default) for calculating regressions!</strong></p>
+<p>This method calculates regression coefficients using the Moore-Penrose pseudo-inverse, and the inverse of <strong>X'X</strong> is calculated using Cholesky decomposition, hence it is referred to as <code>chol</code>.</p>
+<h3 id="options-for-methodchol">Options for <code>method='chol'</code></h3>
+<p>Specify these in a dict using the <code>method_options=</code> kwarg:</p>
+<ul>
+<li><strong>safe</strong> (<code>bool</code>; default: <code>True</code>): If True, returns null coefficients instead of an error when X is perfectly multicollinear. If False, a negative value may be passed into a SQRT() or a divide by zero may occur, and most SQL engines will raise an error when this happens.</li>
+<li><strong>subquery_optimization</strong> (<code>bool</code>; default = <code>True</code>): If True, nested subqueries are used during some of the steps to optimize the query speed. If false, the query is flattened.</li>
+<li><strong>intra_select_aliasing</strong> (<code>bool</code>; default = <code>[depends on db]</code>): If True, within a single select statement, column aliases are used to refer to other columns created during that select. This can significantly reduce the text of a SQL query, but not all SQL engines support this. By default, for all databases officially supported by <strong>dbt_linreg</strong>, the best option is already selected. For unsupported databases, the default is <code>False</code> for broad compatibility, so if you are running <strong>dbt_linreg</strong> in an officially unsupported database engine which supports this feature, you may want to modify this option globally in your <code>vars</code> to be <code>true</code>.</li>
+</ul>
+<h2 id="fwl-method"><code>fwl</code> method</h2>
+<p><strong>This method is generally not recommended.</strong></p>
+<p>Simple univariate regression coefficients are simply <code>covar_pop(y, x) / var_pop(x)</code>.</p>
+<p>The multiple regression implementation uses a technique described in section <code>3.2.3 Multiple Regression from Simple Univariate Regression</code> of TEoSL (<a href="https://hastie.su.domains/Papers/ESLII.pdf#page=71">source</a>). Econometricians know this as the Frisch-Waugh-Lovell theorem, hence the method is referred to as <code>fwl</code> internally in the code base.</p>
+<p>Ridge regression is implemented using the augmentation technique described in Exercise 12 of Chapter 3 of TEoSL (<a href="https://hastie.su.domains/Papers/ESLII.pdf#page=115">source</a>).</p>
+<p>There are a few reasons why this method is discouraged over the <code>chol</code> method:</p>
+<ul>
+<li>🐌 It tends to be much slower in OLAP systems, and struggles to efficiently calculate large number of columns.</li>
+<li>📊 It does not calculate standard errors.</li>
+<li>😕 For ridge regression, coefficients are not accurate; they tend to be off by a magnitude of ~0.01%.</li>
+<li>⚠️ It does not work in all databases because it relies on <code>COVAR_POP</code>.</li>
+</ul>
+<p>So when should you use <code>fwl</code>? The main use case is in OLTP systems (e.g. Postgres) for unregularized coefficient estimation. Long story short, the <code>chol</code> method relies on subquery optimization to be more performant than <code>fwl</code>; however, OLTP systems do not benefit at all from subquery optimization. This means that <code>fwl</code> is slightly more performant in this context.</p>
+<h2 id="setting-method-options-globally">Setting method options globally</h2>
+<p>Method options can be set globally via <code>vars</code>, e.g. in your <code>dbt_project.yml</code>. Each <code>method</code> gets its own config, e.g. the <code>dbt_linreg: method_options: chol: ...</code> namespace only applies to the <code>chol</code> method. Here is an example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># dbt_project.yml</span>
+<span class="nt">vars</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dbt_linreg</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">method_options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">chol</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">intra_select_aliasing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>Method options passed via <code>ols()</code> always take precedence over globally set method options.</p>
+<h1 id="notes">Notes</h1>
+<ul>
+<li>
+<p>⚠️ <strong>If your coefficients are null, it does not mean dbt_linreg is broken, it most likely means your feature columns are perfectly multicollinear.</strong> If you are 100% sure that is not the issue, please file a bug report with a minimally reproducible example.</p>
+</li>
+<li>
+<p>Regularization is implemented using nearly the same approach as Statsmodels; the only difference is that the constant term can never be regularized. This means:</p>
+</li>
+<li>A scalar input (e.g. <code>alpha=0.01</code>) will apply an alpha of <code>0.01</code> to all features.</li>
+<li>An array input (e.g. <code>alpha=[0.01, 0.02, 0.03, 0.04, 0.05]</code>) will apply an alpha of <code>0.01</code> to the first column, <code>0.02</code> to the second column, etc.</li>
+<li><code>alpha</code> is equivalent to what TEoSL refers to as "lambda," times the sample size N. That is to say: <code>α ≡ λ * N</code>.</li>
+<li>
+<p>(Of course, you can regularize the constant term by DIYing your own constant term and doing <code>add_constant=false</code>.)</p>
+</li>
+<li>
+<p>Regularization as currently implemented for the <code>chol</code> method tends to be very slow in OLTP systems (e.g. Postgres), but is very performant in OLAP systems (e.g. Snowflake, DuckDB, BigQuery, Redshift). As dbt is more commonly used in OLAP contexts, the code base is optimized for the OLAP use case.</p>
+</li>
+<li>
+<p>That said, it may be possible to make regularization in OLTP more performant (e.g. with augmentation of the design matrix), so PRs are welcome.</p>
+</li>
+<li>
+<p>Regression coefficients in Postgres are always <code>numeric</code> types.</p>
+</li>
+</ul>
+<h2 id="possible-future-features">Possible future features</h2>
+<p>Some things that could happen in the future:</p>
+<ul>
+<li>Weighted least squares (WLS)</li>
+<li>Efficient multivariate regression (i.e. multiple endogenous vectors sharing a single design matrix)</li>
+<li>P-values</li>
+<li>Heteroskedasticity robust standard errors</li>
+<li>Recursive CTE implementations + long formatted inputs</li>
+</ul>
+<p>Note that although I maintain this library (as of writing in 2025), I do not actively update it much with new features, so this wish list is unlikely unless I personally need it or unless someone else contributes these features.</p>
+<h1 id="faq">FAQ</h1>
+<h3 id="how-does-this-work">How does this work?</h3>
+<p>See <strong>Methods and method options</strong> section for a full breakdown of each linear regression implementation.</p>
+<p>All approaches were validated using Statsmodels <code>sm.OLS()</code>.</p>
+<h3 id="bigquery-or-other-database-has-linear-regression-implemented-natively-why-should-i-use-dbt_linreg-over-that">BigQuery (or other database) has linear regression implemented natively. Why should I use <code>dbt_linreg</code> over that?</h3>
+<p>You don't have to use this. Most warehouses don't support multiple regression out of the box, so this satisfies a niche for those database tools which don't.</p>
+<p>That said, even in BigQuery, it may be very useful to extract coefficients within a query instead of generating a separate <code>MODEL</code> object through a DDL statement, for a few reasons. Even in more black box predictive contexts, being able to predict in the same <code>SELECT</code> statement as training can be convenient. Additionally, BigQuery does not expose model coefficients to users, and this can be a dealbreaker in many contexts where you care about your coefficients as measurements, not as predictive model parameters. Lastly, <code>group_by</code> is akin to estimating parameters for multiple linear regressions at once.</p>
+<p>Overall, I would say this is pretty different from what BigQuery's <code>CREATE MODEL</code> is doing; use whatever makes sense for your use case! But keep in mind that for large numbers of variables, a native implementation of linear regression will be noticeably more efficient than this implementation.</p>
+<h3 id="why-is-l2-regularization-ridge-regression-supported-but-not-l1-regularization-lasso-supported">Why is L2 regularization / ridge regression supported, but not L1 regularization / LASSO supported?</h3>
+<p>There is no closed-form solution to L1 regularization, which makes it very very hard to add through raw SQL. L2 regularization has a closed-form solution and can be implemented using a pre-processing trick.</p>
+<h3 id="is-the-group_by-argument-like-categorical-variables-one-hot-encodings">Is the <code>group_by=[...]</code> argument like categorical variables / one-hot encodings?</h3>
+<p>No. The <code>group_by</code> runs a linear regressions within each group, and each individual partition is its own <code>y</code> vector and <code>X</code> matrix. This is <em>not</em> a replacement for dummy variables.</p>
+<h3 id="why-arent-categorical-variables-one-hot-encodings-supported">Why aren't categorical variables / one-hot encodings supported?</h3>
+<p>I opt to leave out dummy variable support because it's tricky, and I want to keep the API clean and mull on how to best implement that at the highest level.</p>
+<p>Note that you couldn't simply add categorical variables in the same list as numeric variables because Jinja2 templating is not natively aware of the types you're feeding through it, nor does Jinja2 know the values that a string variable can take on. The way you would actually implement categorical variables is with <code>group by</code> trickery (i.e. center both y and X by categorical variable group means), although I am not sure how to do that efficiently for more than one categorical variable column.</p>
+<p>If you'd like to regress on a categorical variable, for now you'll need to do your own feature engineering, e.g. <code>(foo = 'bar')::int as foo_bar, (foo = 'baz')::int as foo_baz</code>.</p>
+<h3 id="why-are-there-no-p-values">Why are there no p-values?</h3>
+<p>This is something that might happen in the future. P-values would require a lookup on a dimension table, which is a significant amount of work to manage nicely.</p>
+<p>In the meanwhile, you can implement this yourself-- just create a dimension table that left joins a t-statistic on a half-open interval to lookup a p-value.</p>
+<h1 id="trademark-copyright">Trademark &amp; Copyright</h1>
+<p>dbt is a trademark of dbt Labs.</p>
+<p>This package is <strong>unaffiliated</strong> with dbt Labs.</p>
+
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/dwreeves/dbt_linreg" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/daniel-reeves-27700545/" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/mueblesfeos" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.e5c33ebb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.51d95adb.min.js"></script>
+      
+    
+  </body>
+</html>
