@@ -16,8 +16,7 @@ function dbt {
 }
 
 function setup {
-  uv sync --all-extras
-  uvx prek install
+  uv sync --group dev
 }
 
 function docker-run-clickhouse {
@@ -47,6 +46,7 @@ function test {
     rm -f dbt.duckdb
   fi
 
+  uv sync --extra "${target}"
   uv run scripts.py gen-test-cases
   dbt deps --target "${target}"
   dbt seed --target "${target}"
@@ -55,7 +55,7 @@ function test {
 }
 
 function lint {
-  uv run pre-commit run -a
+  uv run prek run -a
 }
 
 function docs:deploy {

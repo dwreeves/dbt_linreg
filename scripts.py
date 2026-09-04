@@ -1,3 +1,15 @@
+#!/usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#   "pandas>=2.2.3,<3",
+#   "pyyaml>=6.0.2",
+#   "rich-click>=1.9.5",
+#   "ruff>=0.8.4",
+#   "statsmodels>=0.14.4",
+#   "tabulate>=0.9.0",
+# ]
+# ///
 """
 This file is used for generation of CSV files for integration test cases,
 and also for manual verification + generation of test case values.
@@ -340,6 +352,7 @@ def gen_test_cases(tables: list[str], size: int, seed: int, skip_if_exists: bool
                 if pd.notna(s)
                 else None
             )
+            # todo: len(s) breaks on pandas>=3
             expand_by = params.apply(lambda s: len(s) if s is not None else 0).max()
             params = params.where(
                 pd.notna(params),
