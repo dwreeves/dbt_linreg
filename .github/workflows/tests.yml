@@ -64,7 +64,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install
           chmod +x ./run
-          uv venv
           uv sync --group dev
           uv pip install -U "dbt-core==$DBT_CORE_VERSION" "dbt-${DBT_TARGET}"
         env:
