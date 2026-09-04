@@ -2,7 +2,7 @@
 name = "dbt_linreg"
 requires-python = ">=3.10,<3.14"
 description = "dbt_linreg dbt package"
-version = "0.3.2"
+version = "0.3.3"
 readme = "README.md"
 authors = ["Daniel Reeves"]
 

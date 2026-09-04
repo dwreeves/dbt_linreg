@@ -1,5 +1,9 @@
 # Changelog
 
+### `0.3.3`
+
+- Fix warnings in dbt-core 1.12
+
 ### `0.3.2`
 
 - Address deprecation of `modules.itertools`
