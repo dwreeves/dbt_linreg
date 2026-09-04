@@ -1,4 +1,4 @@
-mkdocs
+mkdocs<2
 pymdown-extensions
 mkdocs-material
 mkdocs-macros-plugin

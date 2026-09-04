@@ -6,7 +6,7 @@
                    output_options=None,
                    group_by=None,
                    alpha=None) -%}
-(with _dbt_linreg_final_coefs as (
+(with _dbt_linreg_final_coefs as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) }}
     avg({{ endog }}) as x0_coef

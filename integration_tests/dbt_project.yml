@@ -17,6 +17,27 @@ vars:
 models:
   +materialized: table
 
+seeds:
+  # Fixes issue in Clickhouse to explicitly specify double
+  # Float32 messes up rounding for integration tests
+  +column_types:
+    y: double precision
+    x1: double precision
+    x2: double precision
+    x3: double precision
+    x4: double precision
+    x5: double precision
+    xa: double precision
+    xb: double precision
+    xc: double precision
+    xd: double precision
+    xe: double precision
+    xf: double precision
+    xg: double precision
+    xh: double precision
+    xi: double precision
+    xj: double precision
+
 tests:
   +store_failures: true
 

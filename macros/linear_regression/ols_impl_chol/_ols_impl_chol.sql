@@ -243,7 +243,7 @@ _dbt_linreg_inverse_chol as (
   from _dbt_linreg_chol
   {%- endif %}
 ),
-_dbt_linreg_inverse_xtx as (
+_dbt_linreg_inverse_xtx as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     {%- for i, j in dbt_linreg._combinations_with_replacement(xcols, 2) %}
@@ -260,7 +260,7 @@ _dbt_linreg_inverse_xtx as (
     {%- endfor %}
   from _dbt_linreg_inverse_chol
 ),
-_dbt_linreg_final_coefs as (
+_dbt_linreg_final_coefs as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
     {%- for x1 in xcols %}
@@ -303,7 +303,7 @@ _dbt_linreg_resid as (
     {{ dbt_linreg._gb_cols(group_by, prefix='b') | indent(2) }}
   {%- endif %}
 ),
-_dbt_linreg_stderrs as (
+_dbt_linreg_stderrs as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True, prefix='b') | indent(4) }}
     {%- for x in xcols %}

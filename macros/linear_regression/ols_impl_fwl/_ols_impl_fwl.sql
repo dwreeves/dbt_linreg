@@ -128,7 +128,7 @@
 {%- set exog_aliased = dbt_linreg._alias_exog(exog) %}
 (with
 {%- if alpha %}
-_dbt_linreg_cmeans as (
+_dbt_linreg_cmeans as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
     avg({{ endog }}) as y,
@@ -240,7 +240,7 @@ _dbt_linreg_step{{ step }} as (
   {{ dbt_linreg._join_on_groups(group_by, 'b', '__dbt_linreg_coefs'~step) | indent(2) }}
 ),
 {%- if loop.last %}
-_dbt_linreg_final_coefs as (
+_dbt_linreg_final_coefs as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {%- if add_constant %}
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}

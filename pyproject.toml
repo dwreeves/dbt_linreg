@@ -2,20 +2,11 @@
 name = "dbt_linreg"
 requires-python = ">=3.10,<3.14"
 description = "dbt_linreg dbt package"
-version = "0.3.2"
+version = "0.3.3"
 readme = "README.md"
 authors = ["Daniel Reeves"]
 
 [project.optional-dependencies]
-python-dev = [
-    "pandas>=2.2.3",
-    "pre-commit>=4.0.1",
-    "pyyaml>=6.0.2",
-    "rich-click>=1.9.5",
-    "ruff>=0.8.4",
-    "statsmodels>=0.14.4",
-    "tabulate>=0.9.0",
-]
 clickhouse = [
     "dbt-core",
     "dbt-clickhouse",
@@ -39,3 +30,8 @@ select = ["F", "E", "W", "I001"]
 [tool.ruff.lint.isort]
 lines-after-imports = 2
 force-single-line = true
+
+[dependency-groups]
+dev = [
+    "prek>=0.5.2",
+]

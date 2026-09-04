@@ -9,7 +9,7 @@
 {%- set exog_aliased = ['x1'] %}
 (with
 {%- if alpha %}
-_dbt_linreg_cmeans as (
+_dbt_linreg_cmeans as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {{ dbt_linreg._alias_gb_cols(group_by) | indent(4) }}
     avg({{ endog }}) as y,
@@ -49,7 +49,7 @@ _dbt_linreg_base as (
   from _dbt_linreg_cmeans
   {%- endif %}
 ),
-_dbt_linreg_final_coefs as (
+_dbt_linreg_final_coefs as {{ dbt_linreg._cte_materialized_kw() }}(
   select
     {{ dbt_linreg._gb_cols(group_by, trailing_comma=True) | indent(4) }}
     {%- if add_constant %}
