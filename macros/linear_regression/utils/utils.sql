@@ -309,3 +309,26 @@ on
 {% macro _get_method_option(method, field, method_options, default=none) %}
   {{ return(method_options.get(field, var("dbt_linreg", {}).get("method_options", {}).get(method, {}).get(field, default))) }}
 {% endmacro %}
+
+{###############################################################################
+## CTE materialization helper
+###############################################################################}
+
+{% macro _cte_materialized_kw() %}
+  {{ return(adapter.dispatch('_cte_materialized_kw', 'dbt_linreg')()) }}
+{% endmacro %}
+
+{% macro default___cte_materialized_kw() %}
+  {{ return('') }}
+{% endmacro %}
+
+{% macro clickhouse___cte_materialized_kw() %}
+  {% if execute and not adapter.is_before_version('26.3') %}
+    {{ return('materialized ') }}
+  {% endif %}
+  {{ return('') }}
+{% endmacro %}
+
+{% macro duckdb___cte_materialized_kw() %}
+  {{ return('materialized ') }}
+{% endmacro %}

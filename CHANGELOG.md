@@ -3,6 +3,7 @@
 ### `0.3.3`
 
 - Fix warnings in dbt-core 1.12
+- Add materialized CTEs for better performance in Duckdb and Clickhouse
 
 ### `0.3.2`
 
